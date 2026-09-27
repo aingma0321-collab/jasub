@@ -80,7 +80,6 @@
     .digital-timer { font-size: 2.2rem; font-family: monospace; font-weight: bold; margin: 8px 0; color: #fff; }
 
     #clock-display { font-size: 4rem; font-weight: bold; letter-spacing: 2px; color: #fff; margin-bottom: 10px; }
-    #routine-status { font-size: 0.95rem; color: #888; background: #0a0a0a; padding: 10px 15px; border-radius: 8px; border: 1px solid #222; margin-top: 10px; text-align: center; max-width: 400px; }
     
     #black-screen { background: #000000; cursor: pointer; }
     
@@ -103,13 +102,12 @@
 
   <div class="swiper-container" id="swiper">
     
-    <!-- [페이지 1] 왼쪽 끝: 타이머 & 무음 알람 & 스톱워치 -->
+    <!-- [페이지 1] 왼쪽 끝: 타이머 & 스톱워치 -->
     <div class="page">
-      <h2>타이머 & 무음 알람</h2>
+      <h2>타이머 & 스톱워치</h2>
       
       <div class="utility-box">
-        <div class="utility-title">타이머 & 유튜브 무음 알람</div>
-        <input type="text" id="yt-link" class="input-box" placeholder="유튜브 링크 입력" style="margin-bottom:8px; font-size:0.9rem;">
+        <div class="utility-title">타이머</div>
         <div style="display:flex; gap:5px; margin-bottom:8px;">
           <input type="number" id="timer-min" class="input-box" placeholder="분 입력" style="text-align:center;">
           <button class="btn" onclick="startTimer()" style="padding:8px 12px; margin:0;">시작</button>
@@ -169,10 +167,9 @@
       </div>
     </div>
 
-    <!-- [페이지 5] 오른쪽 3: 시계 & 정각 루틴 알람 -->
+    <!-- [페이지 5] 오른쪽 3: 시계 -->
     <div class="page">
       <div id="clock-display">00:00:00</div>
-      <div id="routine-status">루틴 알람 대기 중 (09:00 ~ 15:50)</div>
     </div>
 
     <!-- [페이지 6] 오른쪽 4: 검은 화면 -->
@@ -225,8 +222,6 @@
         if(totalSeconds <= 0) {
           clearInterval(timerInterval);
           document.getElementById('timer-display').innerText = "00:00";
-          const link = document.getElementById('yt-link').value;
-          if(link.includes('youtu')) window.location.href = link;
           return;
         }
         totalSeconds--;
@@ -351,49 +346,11 @@
       db.ref('memos').remove();
     }
 
-    /* ================= 시계 및 엄격한 시간 제한 루틴 알람 로직 ================= */
     setInterval(() => {
       const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
-      const s = now.getSeconds();
-
       document.getElementById('clock-display').innerText = 
-        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-      let routineText = "루틴 알람 대기 중 (09:00 ~ 15:50)";
-
-      // 1. 엄격한 시간 범위 체크: 오전 9시(9시 0분 0초)부터 오후 3시 50분(15시 50분 0초) 사이에만 작동
-      const currentTimeInMin = h * 60 + m;
-      const startTimeInMin = 9 * 60;       // 09:00
-      const endTimeInMin = 15 * 60 + 50;   // 15:50
-
-      if (currentTimeInMin >= startTimeInMin && currentTimeInMin <= endTimeInMin) {
-        // 오전 9시 ~ 12시 미만
-        if (h >= 9 && h < 12) {
-          if (m === 0 && s === 0) triggerRoutineAlarm();
-          if (m === 10 && s === 0) triggerRoutineAlarm();
-          routineText = `[오전 루틴 작동중] (정각:휴식 / 10분:수업)`;
-        } 
-        // 12시 ~ 오후 3시 50분 이하
-        else if (h >= 12 && (h < 15 || (h === 15 && m <= 50))) {
-          if (m === 50 && s === 0) triggerRoutineAlarm();
-          if (m === 0 && s === 0) triggerRoutineAlarm();
-          routineText = `[오후 루틴 작동중] (50분:휴식 / 정각:수업)`;
-        }
-      } else {
-        routineText = "알람 비활성화 시간 (09:00 ~ 15:50 외)";
-      }
-
-      document.getElementById('routine-status').innerText = routineText;
+        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
     }, 1000);
-
-    function triggerRoutineAlarm() {
-      const link = document.getElementById('yt-link').value;
-      if(link.includes('youtu')) {
-        window.location.href = link;
-      }
-    }
 
     let wakeLock = null;
     document.body.addEventListener('click', async () => {
