@@ -16,7 +16,7 @@
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { width: 100%; height: 100%; font-family: 'Pretendard', sans-serif; background: #121212; color: white; overflow: hidden; }
+    body, html { width: 100%; height: 100%; font-family: 'Pretendard', sans-serif; background: #000000; color: #ffffff; overflow: hidden; }
     
     .swiper-container {
       display: flex;
@@ -38,62 +38,65 @@
       justify-content: center;
       padding: 20px;
       position: relative;
+      background: #000000;
     }
 
-    h1 { font-size: 3rem; margin-bottom: 20px; }
-    h2 { font-size: 1.5rem; margin-bottom: 15px; color: #aaa; }
+    h1 { font-size: 3rem; margin-bottom: 20px; color: #fff; }
+    h2 { font-size: 1.5rem; margin-bottom: 15px; color: #ccc; }
     
-    .btn { padding: 12px 24px; background: #333; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
-    .btn:active { background: #555; }
+    .btn { padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #333; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
+    .btn:active { background: #333; }
     
-    .input-box { width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+    /* 올블랙 입력창 스타일 */
+    .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0d0d0d; color: #fff; font-size: 1rem; text-align: center; }
+    .input-box::placeholder { color: #666; }
 
-    /* 시간표 스타일 */
+    /* 시간표 스타일 (올블랙) */
     .timetable { width: 95%; max-width: 500px; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; text-align: center; }
-    .timetable th, .timetable td { border: 1px solid #444; padding: 12px 4px; word-break: keep-all; }
-    .timetable th { background: #333; font-weight: bold; color: #ddd; }
-    .timetable td { background: #1a1a1a; }
+    .timetable th, .timetable td { border: 1px solid #222; padding: 12px 4px; word-break: keep-all; }
+    .timetable th { background: #111; font-weight: bold; color: #ddd; }
+    .timetable td { background: #050505; color: #ddd; }
 
-    /* 클리어 메모지 (아날로그 메모장 스타일) */
-    .memo-board-container { width: 100%; max-width: 420px; height: 65vh; display: flex; flex-direction: column; background: #fff8dc; color: #333; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; }
-    .memo-header { font-family: 'Courier New', Courier, monospace; font-size: 1.4rem; font-weight: bold; border-bottom: 2px dashed #d4af37; padding-bottom: 8px; margin-bottom: 12px; color: #5c4033; text-align: center; }
+    /* 클리어 메모지 (올블랙 스타일) */
+    .memo-board-container { width: 100%; max-width: 420px; height: 65vh; display: flex; flex-direction: column; background: #0a0a0a; color: #fff; border: 1px solid #222; border-radius: 12px; padding: 20px; position: relative; }
+    .memo-header { font-family: 'Courier New', Courier, monospace; font-size: 1.4rem; font-weight: bold; border-bottom: 2px dashed #333; padding-bottom: 8px; margin-bottom: 12px; color: #fff; text-align: center; }
     .memo-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .memo-input-row input { flex: 1; padding: 10px; border: 1px solid #dcdcdc; border-radius: 6px; font-size: 0.95rem; background: #fff; }
-    .memo-input-row button { padding: 10px 16px; background: #5c4033; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .memo-input-row input { flex: 1; padding: 10px; border: 1px solid #333; border-radius: 6px; font-size: 0.95rem; background: #000; color: #fff; }
+    .memo-input-row input::placeholder { color: #555; }
+    .memo-input-row button { padding: 10px 16px; background: #222; color: white; border: 1px solid #444; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
     .memo-scroll-area { flex: 1; overflow-y: auto; padding-right: 5px; }
-    .memo-card { background: #fffacd; border-left: 4px solid #deb887; padding: 12px; border-radius: 6px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .memo-card { background: #111; border-left: 4px solid #444; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #222; }
     .memo-line { display: flex; align-items: center; justify-content: space-between; }
     .memo-check-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-right: 8px; }
-    .memo-text-content { flex: 1; font-size: 1.05rem; word-break: break-all; color: #2c2c2c; }
-    .strikethrough { text-decoration: line-through; color: #888; }
+    .memo-text-content { flex: 1; font-size: 1.05rem; word-break: break-all; color: #eee; }
+    .strikethrough { text-decoration: line-through; color: #666; }
     
-    .memo-slider-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #faebd7; padding: 8px 12px; border-radius: 6px; }
-    .memo-slider-box input[type="range"] { flex: 1; accent-color: #5c4033; }
+    .memo-slider-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #000; padding: 8px 12px; border-radius: 6px; border: 1px solid #222; }
+    .memo-slider-box input[type="range"] { flex: 1; accent-color: #888; }
 
-    /* 타이머 / 스톱워치 박스 */
-    .utility-box { background: #1e1e1e; padding: 15px; border-radius: 10px; width: 90%; max-width: 400px; margin-bottom: 15px; text-align: center; border: 1px solid #333; }
-    .utility-title { font-size: 1.1rem; color: #ffcc00; margin-bottom: 8px; font-weight: bold; }
+    /* 타이머 / 스톱워치 박스 (올블랙) */
+    .utility-box { background: #0a0a0a; padding: 15px; border-radius: 10px; width: 90%; max-width: 400px; margin-bottom: 15px; text-align: center; border: 1px solid #222; }
+    .utility-title { font-size: 1.1rem; color: #aaa; margin-bottom: 8px; font-weight: bold; }
     .digital-timer { font-size: 2.2rem; font-family: monospace; font-weight: bold; margin: 8px 0; color: #fff; }
 
-    #clock-display { font-size: 5rem; font-weight: bold; letter-spacing: 2px; }
-    #black-screen { background: black; cursor: pointer; }
+    #clock-display { font-size: 5rem; font-weight: bold; letter-spacing: 2px; color: #fff; }
+    #black-screen { background: #000000; cursor: pointer; }
     
-    .omr-container { width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; text-align: left; background: #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
-    .omr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
-    .omr-row label { display: inline-block; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #777; text-align: center; line-height: 30px; margin-left: 5px; cursor: pointer; font-size: 0.9rem;}
+    .omr-container { width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; text-align: left; background: #0a0a0a; border: 1px solid #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
+    .omr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+    .omr-row label { display: inline-block; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #444; text-align: center; line-height: 30px; margin-left: 5px; cursor: pointer; font-size: 0.9rem; background: #000; color: #ccc;}
     .omr-row input[type="radio"] { display: none; }
     .omr-row input[type="radio"]:checked + label { background: #fff; color: #000; font-weight: bold; }
     
     .indicator { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
-    .dot { width: 8px; height: 8px; background: #555; border-radius: 50%; }
+    .dot { width: 8px; height: 8px; background: #333; border-radius: 50%; }
     .dot.active { background: white; }
   </style>
 </head>
 <body>
 
   <div class="indicator" id="indicator">
-    <!-- 총 6개 페이지 (메인 기준 양옆) -->
     <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
   </div>
 
@@ -103,26 +106,24 @@
     <div class="page">
       <h2>타이머 & 무음 알람</h2>
       
-      <!-- 타이머 및 유튜브 링크 -->
       <div class="utility-box">
         <div class="utility-title">타이머 & 유튜브 무음 알람</div>
         <input type="text" id="yt-link" class="input-box" placeholder="유튜브 링크 입력" style="margin-bottom:8px; font-size:0.9rem;">
         <div style="display:flex; gap:5px; margin-bottom:8px;">
           <input type="number" id="timer-min" class="input-box" placeholder="분 입력" style="text-align:center;">
           <button class="btn" onclick="startTimer()" style="padding:8px 12px; margin:0;">시작</button>
-          <button class="btn" onclick="stopTimer()" style="padding:8px 12px; margin:0; background:#b30000;">중지</button>
+          <button class="btn" onclick="stopTimer()" style="padding:8px 12px; margin:0; background:#220000; border-color:#500;">중지</button>
         </div>
         <div class="digital-timer" id="timer-display">00:00</div>
       </div>
 
-      <!-- 스톱워치 -->
       <div class="utility-box">
         <div class="utility-title">스톱워치</div>
         <div class="digital-timer" id="stopwatch-display">00:00:00</div>
         <div style="display:flex; justify-content:center; gap:8px;">
           <button class="btn" onclick="startStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem;">시작</button>
-          <button class="btn" onclick="pauseStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem; background:#555;">정지</button>
-          <button class="btn" onclick="resetStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem; background:#b30000;">초기화</button>
+          <button class="btn" onclick="pauseStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem; background:#1a1a1a;">정지</button>
+          <button class="btn" onclick="resetStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem; background:#220000; border-color:#500;">초기화</button>
         </div>
       </div>
     </div>
@@ -130,7 +131,7 @@
     <!-- [페이지 2] 중앙 메인: 자습자족 (첫 화면) -->
     <div class="page">
       <h1>자습자족</h1>
-      <p style="color:#aaa;">양옆으로 스와이프하여 기능을 전환하세요</p>
+      <p style="color:#666;">양옆으로 스와이프하여 기능을 전환하세요</p>
     </div>
 
     <!-- [페이지 3] 오른쪽 1: 시간표 -->
@@ -143,18 +144,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td>1</td><td>영어II</td><td>확률과 통계</td><td>물질과 에너지</td><td style="color:#81d4fa;">일본어</td><td style="color:#a5d6a7;">지정학과<br>글로벌이슈</td></tr>
-          <tr><td>2</td><td>미적분II</td><td>화법과 언어</td><td>스포츠 생활2</td><td style="color:#a5d6a7;">지정학과<br>글로벌이슈</td><td style="color:#81d4fa;">일본어</td></tr>
+          <tr><td>1</td><td>영어II</td><td>확률과 통계</td><td>물질과 에너지</td><td style="color:#aaa;">일본어</td><td style="color:#aaa;">지정학과<br>글로벌이슈</td></tr>
+          <tr><td>2</td><td>미적분II</td><td>화법과 언어</td><td>스포츠 생활2</td><td style="color:#aaa;">지정학과<br>글로벌이슈</td><td style="color:#aaa;">일본어</td></tr>
           <tr><td>3</td><td>확률과 통계</td><td>역학과 에너지</td><td>영어II</td><td>물질과 에너지</td><td>역학과 에너지</td></tr>
           <tr><td>4</td><td>영어II</td><td>미적분II</td><td>확률과 통계</td><td>지구시스템과학</td><td>지구시스템과학</td></tr>
           <tr><td>5</td><td>지구시스템과학</td><td>영어II</td><td>자율</td><td>미적분II</td><td>화법과 언어</td></tr>
-          <tr><td>6</td><td style="color:#81d4fa;">일본어</td><td style="color:#a5d6a7;">지정학과<br>글로벌이슈</td><td>자치</td><td>화법과 언어</td><td>물질과 에너지</td></tr>
+          <tr><td>6</td><td style="color:#aaa;">일본어</td><td style="color:#aaa;">지정학과<br>글로벌이슈</td><td>자치</td><td>화법과 언어</td><td>물질과 에너지</td></tr>
           <tr><td>7</td><td>역학과 에너지</td><td>창체1</td><td></td><td>스포츠 생활2</td><td>창체2</td></tr>
         </tbody>
       </table>
     </div>
 
-    <!-- [페이지 4] 오른쪽 2: 클리어 메모지 (실시간 동기화) -->
+    <!-- [페이지 4] 오른쪽 2: 클리어 메모지 (올블랙) -->
     <div class="page">
       <div class="memo-board-container">
         <div class="memo-header">📌 클리어 메모지</div>
@@ -162,10 +163,8 @@
           <input type="text" id="memo-input" placeholder="오늘 할 일을 적어보세요">
           <button onclick="addNewMemo()">완료</button>
         </div>
-        <div class="memo-scroll-area" id="memo-list-area">
-          <!-- 동기화된 메모 리스트가 들어오는 곳 -->
-        </div>
-        <button id="delete-all-btn" onclick="deleteAllFirebaseMemos()" style="display:none; width:100%; padding:10px; background:#b22222; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:10px;">모든 항목 삭제하기</button>
+        <div class="memo-scroll-area" id="memo-list-area"></div>
+        <button id="delete-all-btn" onclick="deleteAllFirebaseMemos()" style="display:none; width:100%; padding:10px; background:#220000; color:white; border:1px solid #500; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:10px;">모든 항목 삭제하기</button>
       </div>
     </div>
 
@@ -174,25 +173,24 @@
       <div id="clock-display">00:00:00</div>
     </div>
 
-    <!-- [페이지 6] 오른쪽 4: 검은 화면 (글씨 없음) -->
+    <!-- [페이지 6] 오른쪽 4: 검은 화면 -->
     <div class="page" id="black-screen"></div>
 
     <!-- [페이지 7] 오른쪽 5: OMR 채점기 -->
     <div class="page">
       <h2>정답 채점기</h2>
-      <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">정답지가 있는 사진을 올리세요</p>
+      <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">정답지가 있는 사진을 올리세요</p>
       <input type="file" id="answer-image" accept="image/*" class="btn" style="font-size: 0.9rem; width:90%; max-width:400px;">
-      <div id="ocr-status" style="color:#4CAF50; font-size:0.9rem; margin-top:5px;"></div>
+      <div id="ocr-status" style="color:#aaa; font-size:0.9rem; margin-top:5px;"></div>
       
       <div class="omr-container" id="omr-board"></div>
       <button class="btn" id="grade-btn" style="display:none; width: 100%; max-width: 400px; margin-top: 10px;">채점하기</button>
-      <div id="grade-result" style="font-size: 1.5rem; margin-top: 15px; font-weight:bold;"></div>
+      <div id="grade-result" style="font-size: 1.5rem; margin-top: 15px; font-weight:bold; color:#fff;"></div>
     </div>
 
   </div>
 
   <script>
-    /* ================= Firebase 연동 설정 ================= */
     const firebaseConfig = {
       apiKey: "AIzaSyBdX2nqZYkH_V33s_bV8TRpa-rAIiBWbcQ",
       authDomain: "test-eb398.firebaseapp.com",
@@ -206,14 +204,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    /* ================= 시작할 때 메인 페이지(자습자족)로 고정 ================= */
     window.addEventListener('DOMContentLoaded', () => {
       const swiper = document.getElementById('swiper');
-      // 2번째 페이지가 '자습자족' 메인 화면
       swiper.scrollLeft = window.innerWidth * 1; 
     });
 
-    /* ================= 타이머 & 무음 알람 로직 ================= */
     let timerInterval = null;
     function startTimer() {
       const minInput = document.getElementById('timer-min').value;
@@ -228,7 +223,6 @@
         if(totalSeconds <= 0) {
           clearInterval(timerInterval);
           document.getElementById('timer-display').innerText = "00:00";
-          // 시간이 다 되면 무음으로 유튜브 링크 열기
           const link = document.getElementById('yt-link').value;
           if(link.includes('youtu')) window.location.href = link;
           return;
@@ -244,7 +238,6 @@
       document.getElementById('timer-display').innerText = "00:00";
     }
 
-    /* ================= 스톱워치 로직 ================= */
     let swInterval = null;
     let swSeconds = 0;
     function startStopwatch() {
@@ -269,7 +262,6 @@
       document.getElementById('stopwatch-display').innerText = "00:00:00";
     }
 
-    /* ================= 클리어 메모지 (Firebase 실시간 동기화) ================= */
     function addNewMemo() {
       const input = document.getElementById('memo-input');
       const text = input.value.trim();
@@ -285,7 +277,6 @@
       input.value = '';
     }
 
-    // 데이터베이스 변경 감지 및 렌더링
     db.ref('memos').on('value', (snapshot) => {
       const data = snapshot.val();
       const listArea = document.getElementById('memo-list-area');
@@ -328,13 +319,12 @@
         line.appendChild(textContent);
         card.appendChild(line);
 
-        // 슬라이더 바 표시
         if(m.showSlider && !m.done) {
           const sliderBox = document.createElement('div');
           sliderBox.className = 'memo-slider-box';
           sliderBox.innerHTML = `
             <input type="range" min="0" max="100" value="${m.progress}" onchange="updateFirebaseProgress('${id}', this.value)">
-            <span style="font-weight:bold; font-size:0.9rem; color:#5c4033; min-width:35px; text-align:right;">${m.progress}%</span>
+            <span style="font-weight:bold; font-size:0.9rem; color:#aaa; min-width:35px; text-align:right;">${m.progress}%</span>
           `;
           card.appendChild(sliderBox);
         }
@@ -359,7 +349,6 @@
       db.ref('memos').remove();
     }
 
-    /* ================= 시계 및 화면 꺼짐 방지 ================= */
     setInterval(() => {
       const now = new Date();
       document.getElementById('clock-display').innerText = 
@@ -373,13 +362,12 @@
       } catch (err) {}
     });
 
-    /* ================= OMR 채점기 ================= */
     let extractedAnswers = [];
     document.getElementById('answer-image').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
       const status = document.getElementById('ocr-status');
-      status.innerText = "정답 분석 중... (5~10초 소요)";
+      status.innerText = "정답 분석 중...";
       
       Tesseract.recognize(file, 'eng', { logger: m => {} })
         .then(({ data: { text } }) => {
@@ -389,7 +377,7 @@
             return;
           }
           extractedAnswers = numbers.slice(0, 20); 
-          status.innerText = "정답 인식 완료! (내용은 숨겨짐)";
+          status.innerText = "정답 인식 완료!";
           generateOMR(extractedAnswers.length);
         });
     });
@@ -400,7 +388,7 @@
       for(let i = 0; i < count; i++) {
         let row = document.createElement('div');
         row.className = 'omr-row';
-        row.innerHTML = `<span style="width: 30px; font-weight:bold;">${i+1}.</span>
+        row.innerHTML = `<span style="width: 30px; font-weight:bold; color:#aaa;">${i+1}.</span>
           <div>${[1,2,3,4,5].map(j => `<input type="radio" name="q${i}" id="q${i}_o${j}" value="${j}"><label for="q${i}_o${j}">${j}</label>`).join('')}</div>`;
         board.appendChild(row);
       }
@@ -414,11 +402,10 @@
         if (selected && parseInt(selected.value) === extractedAnswers[i]) score++;
         else wrongList.push(i + 1);
       }
-      document.getElementById('grade-result').innerHTML = `점수: <span style="color:#4CAF50">${Math.round((score/total)*100)}점</span> (${score}/${total})<br>
-        <span style="font-size:1rem; color:#FF5252;">틀린 문항: ${wrongList.length > 0 ? wrongList.join(', ') : '없음!'}</span>`;
+      document.getElementById('grade-result').innerHTML = `점수: <span style="color:#fff">${Math.round((score/total)*100)}점</span> (${score}/${total})<br>
+        <span style="font-size:1rem; color:#888;">틀린 문항: ${wrongList.length > 0 ? wrongList.join(', ') : '없음!'}</span>`;
     });
 
-    /* ================= 스와이프 인디케이터 연동 ================= */
     const swiper = document.getElementById('swiper');
     const dots = document.querySelectorAll('.dot');
     swiper.addEventListener('scroll', () => {
