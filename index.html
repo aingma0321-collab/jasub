@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>자습자족</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; font-family: 'Pretendard', sans-serif; background: #121212; color: white; overflow: hidden; }
+    
+    .swiper-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none; 
+    }
+    .swiper-container::-webkit-scrollbar { display: none; }
+    
+    .page {
+      min-width: 100vw;
+      height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    h1 { font-size: 3rem; margin-bottom: 20px; }
+    h2 { font-size: 1.5rem; margin-bottom: 15px; color: #aaa; }
+    
+    .btn { padding: 12px 24px; background: #333; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
+    .btn:active { background: #555; }
+    
+    /* 텍스트 입력창 스타일 */
+    .input-box { width: 90%; max-width: 400px; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+    
+    #clock-display { font-size: 5rem; font-weight: bold; letter-spacing: 2px; }
+    #black-screen { background: black; cursor: pointer; }
+    
+    .omr-container { width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; text-align: left; background: #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
+    .omr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+    .omr-row label { display: inline-block; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #777; text-align: center; line-height: 30px; margin-left: 5px; cursor: pointer; font-size: 0.9rem;}
+    .omr-row input[type="radio"] { display: none; }
+    .omr-row input[type="radio"]:checked + label { background: #fff; color: #000; font-weight: bold; }
+    
+    .indicator { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
+    .dot { width: 8px; height: 8px; background: #555; border-radius: 50%; }
+    .dot.active { background: white; }
+  </style>
+</head>
+<body>
+
+  <div class="indicator" id="indicator">
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+
+  <div class="swiper-container" id="swiper">
+    <!-- 1. 메인 (자습자족) -->
+    <div class="page">
+      <h1>자습자족</h1>
+      <p style="color:#aaa;">오른쪽으로 스와이프하세요</p>
+    </div>
+
+    <!-- 2. 알람 (유튜브 링크 입력) -->
+    <div class="page">
+      <h2>자습 루틴 알람</h2>
+      <p style="text-align:center; color:#888; font-size:0.9rem; line-height:1.6; margin-bottom: 15px;">
+        09:00~12:00 -> [정각: 쉬는시간 / 10분: 수업]<br>
+        12:00~15:50 -> [50분: 쉬는시간 / 정각: 수업]<br>
+        <strong style="color:#ffcc00;">⚠️ 주의: 이어폰이 빠지면 스피커로 재생됩니다!</strong>
+      </p>
+      
+      <input type="text" id="yt-link" class="input-box" placeholder="알람용 유튜브 링크 복사해서 붙여넣기">
+      <button class="btn" onclick="saveYoutubeLink()">유튜브 알람 저장</button>
+      <button class="btn" onclick="testYoutubeAlarm()" style="background:#b30000;">테스트 실행</button>
+    </div>
+
+    <!-- 3. 급식 -->
+    <div class="page">
+      <h2>중앙고 오늘의 급식</h2>
+      <div id="meal-content" style="background:#222; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; line-height: 1.8;">
+        불러오는 중...
+      </div>
+    </div>
+
+    <!-- 4. 시계 -->
+    <div class="page">
+      <div id="clock-display">00:00:00</div>
+    </div>
+
+    <!-- 5. 검은 화면 -->
+    <div class="page" id="black-screen">
+      <p style="color:#333; font-size:0.8rem;">(스와이프하면 돌아갑니다. 화면 꺼짐 방지 작동 중)</p>
+    </div>
+
+    <!-- 6. OMR 채점기 -->
+    <div class="page">
+      <h2>정답 채점기</h2>
+      <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">정답지가 있는 사진을 올리세요 (텍스트 숨김 처리)</p>
+      <input type="file" id="answer-image" accept="image/*" class="btn" style="font-size: 0.9rem; width:90%; max-width:400px;">
+      <div id="ocr-status" style="color:#4CAF50; font-size:0.9rem; margin-top:5px;"></div>
+      
+      <div class="omr-container" id="omr-board"></div>
+      <button class="btn" id="grade-btn" style="display:none; width: 100%; max-width: 400px; margin-top: 10px;">채점하기</button>
+      <div id="grade-result" style="font-size: 1.5rem; margin-top: 15px; font-weight:bold;"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ================= 유튜브 알람 로직 ================= */
+    // 기존에 저장된 유튜브 링크 불러오기
+    window.onload = () => {
+      const savedLink = localStorage.getItem('youtubeAlarmLink');
+      if(savedLink) document.getElementById('yt-link').value = savedLink;
+    };
+
+    function saveYoutubeLink() {
+      const link = document.getElementById('yt-link').value;
+      if(link.includes('youtu')) {
+        localStorage.setItem('youtubeAlarmLink', link);
+        alert('유튜브 알람이 저장되었습니다! 시간이 되면 자동으로 실행됩니다.');
+      } else {
+        alert('올바른 유튜브 링크를 입력해주세요.');
+      }
+    }
+
+    function fireYoutubeAlarm() {
+      const link = localStorage.getItem('youtubeAlarmLink');
+      if(link) {
+        // 시간이 되면 현재 창을 유튜브 링크로 덮어씌워서 실행시킴 (안드로이드에서는 유튜브 앱이 켜질 확률이 높음)
+        window.location.href = link; 
+      }
+    }
+
+    function testYoutubeAlarm() {
+      fireYoutubeAlarm();
+    }
+
+    /* ================= 알람 타이머 및 시계 ================= */
+    setInterval(() => {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+
+      document.getElementById('clock-display').innerText = 
+        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+      // 정각(0초)일 때만 알람 시간 검사
+      if (s === 0) {
+        // 오전 9시 ~ 12시 이전
+        if (h >= 9 && h < 12) {
+          if (m === 0 || m === 10) fireYoutubeAlarm();
+        } 
+        // 12시 ~ 오후 3시 50분
+        else if (h >= 12 && (h < 15 || (h === 15 && m <= 50))) {
+          if (m === 50 || m === 0) fireYoutubeAlarm();
+        }
+      }
+    }, 1000);
+
+    /* ================= 화면 꺼짐 방지 (검은 화면 유지용) ================= */
+    let wakeLock = null;
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) { console.log('Wake Lock Error:', err); }
+    };
+    
+    // 화면을 터치하거나 넘길 때 절전 방지 모드 활성화 (브라우저 정책상 터치 후 실행 가능)
+    document.body.addEventListener('click', requestWakeLock);
+
+    /* ================= 급식 API 임시 로직 ================= */
+    function fetchMeal() {
+      const mealDiv = document.getElementById('meal-content');
+      mealDiv.innerHTML = `
+        <strong style="font-size:1.2rem; color:#4CAF50;">[오늘의 급식]</strong><br><br>
+        현미밥<br>얼큰 순대국밥<br>수제 떡갈비구이<br>깍두기<br>초코우유
+      `;
+    }
+    fetchMeal();
+
+    /* ================= OMR 채점기 ================= */
+    let extractedAnswers = [];
+    document.getElementById('answer-image').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const status = document.getElementById('ocr-status');
+      status.innerText = "정답을 분석하고 사진을 숨기는 중... (약 5~10초 소요)";
+      
+      Tesseract.recognize(file, 'eng', { logger: m => console.log(m) })
+        .then(({ data: { text } }) => {
+          const numbers = text.replace(/[^1-5]/g, '').split('').map(Number).filter(n => n >= 1 && n <= 5);
+          if (numbers.length === 0) {
+            status.innerText = "정답(1~5 숫자)을 인식하지 못했습니다.";
+            return;
+          }
+          extractedAnswers = numbers.slice(0, 20); 
+          status.innerText = "정답 인식 완료! (이미지와 정답은 숨겨졌습니다)";
+          generateOMR(extractedAnswers.length);
+        });
+    });
+
+    function generateOMR(questionCount) {
+      const board = document.getElementById('omr-board');
+      board.innerHTML = '';
+      for(let i = 0; i < questionCount; i++) {
+        let row = document.createElement('div');
+        row.className = 'omr-row';
+        row.innerHTML = `<span style="width: 30px; font-weight:bold;">${i+1}.</span>
+          <div>
+            ${[1,2,3,4,5].map(j => `<input type="radio" name="q${i}" id="q${i}_o${j}" value="${j}"><label for="q${i}_o${j}">${j}</label>`).join('')}
+          </div>`;
+        board.appendChild(row);
+      }
+      document.getElementById('grade-btn').style.display = 'block';
+    }
+
+    document.getElementById('grade-btn').addEventListener('click', () => {
+      let score = 0;
+      let total = extractedAnswers.length;
+      let wrongList = [];
+      for(let i = 0; i < total; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (selected && parseInt(selected.value) === extractedAnswers[i]) score++;
+        else wrongList.push(i + 1);
+      }
+      document.getElementById('grade-result').innerHTML = `점수: <span style="color:#4CAF50">${Math.round((score/total)*100)}점</span> (${score}/${total})<br>
+        <span style="font-size:1rem; color:#FF5252;">틀린 문항: ${wrongList.length > 0 ? wrongList.join(', ') : '없음!'}</span>`;
+    });
+
+    /* ================= 스와이프 인디케이터 ================= */
+    const swiper = document.getElementById('swiper');
+    const dots = document.querySelectorAll('.dot');
+    swiper.addEventListener('scroll', () => {
+      const index = Math.round(swiper.scrollLeft / window.innerWidth);
+      dots.forEach(d => d.classList.remove('active'));
+      if(dots[index]) dots[index].classList.add('active');
+    });
+  </script>
+</body>
+</html>
