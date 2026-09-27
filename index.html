@@ -8,6 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>자습자족</title>
   
+  <!-- Firebase (Realtime Database) SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
   <style>
@@ -43,25 +47,35 @@
     .btn:active { background: #555; }
     
     .input-box { width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
-    
+
     /* 시간표 스타일 */
     .timetable { width: 95%; max-width: 500px; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; text-align: center; }
     .timetable th, .timetable td { border: 1px solid #444; padding: 12px 4px; word-break: keep-all; }
     .timetable th { background: #333; font-weight: bold; color: #ddd; }
     .timetable td { background: #1a1a1a; }
 
-    /* 클리어 메모지 스타일 */
-    .memo-container { width: 95%; max-width: 400px; margin-top: 15px; }
-    .memo-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-    .memo-item { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; }
-    .memo-row { display: flex; align-items: center; gap: 12px; }
-    .memo-check-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; padding: 0; }
-    .memo-text { flex: 1; font-size: 1.1rem; line-height: 1.4; transition: all 0.3s; }
-    .strikethrough { text-decoration: line-through; color: #777; }
+    /* 클리어 메모지 (아날로그 메모장 스타일) */
+    .memo-board-container { width: 100%; max-width: 420px; height: 65vh; display: flex; flex-direction: column; background: #fff8dc; color: #333; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; }
+    .memo-header { font-family: 'Courier New', Courier, monospace; font-size: 1.4rem; font-weight: bold; border-bottom: 2px dashed #d4af37; padding-bottom: 8px; margin-bottom: 12px; color: #5c4033; text-align: center; }
+    .memo-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .memo-input-row input { flex: 1; padding: 10px; border: 1px solid #dcdcdc; border-radius: 6px; font-size: 0.95rem; background: #fff; }
+    .memo-input-row button { padding: 10px 16px; background: #5c4033; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
     
-    .memo-slider-container { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: #111; padding: 10px 15px; border-radius: 8px; }
-    .memo-slider-container input[type="range"] { flex: 1; accent-color: #4CAF50; }
+    .memo-scroll-area { flex: 1; overflow-y: auto; padding-right: 5px; }
+    .memo-card { background: #fffacd; border-left: 4px solid #deb887; padding: 12px; border-radius: 6px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .memo-line { display: flex; align-items: center; justify-content: space-between; }
+    .memo-check-toggle { background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 0; margin-right: 8px; }
+    .memo-text-content { flex: 1; font-size: 1.05rem; word-break: break-all; color: #2c2c2c; }
+    .strikethrough { text-decoration: line-through; color: #888; }
     
+    .memo-slider-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #faebd7; padding: 8px 12px; border-radius: 6px; }
+    .memo-slider-box input[type="range"] { flex: 1; accent-color: #5c4033; }
+
+    /* 타이머 / 스톱워치 박스 */
+    .utility-box { background: #1e1e1e; padding: 15px; border-radius: 10px; width: 90%; max-width: 400px; margin-bottom: 15px; text-align: center; border: 1px solid #333; }
+    .utility-title { font-size: 1.1rem; color: #ffcc00; margin-bottom: 8px; font-weight: bold; }
+    .digital-timer { font-size: 2.2rem; font-family: monospace; font-weight: bold; margin: 8px 0; color: #fff; }
+
     #clock-display { font-size: 5rem; font-weight: bold; letter-spacing: 2px; }
     #black-screen { background: black; cursor: pointer; }
     
@@ -79,31 +93,47 @@
 <body>
 
   <div class="indicator" id="indicator">
-    <!-- 총 7개 페이지 -->
-    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <!-- 총 6개 페이지 (메인 기준 양옆) -->
+    <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
   </div>
 
   <div class="swiper-container" id="swiper">
-    <!-- 1. 메인 -->
+    
+    <!-- [페이지 1] 왼쪽 끝: 타이머 & 무음 알람 & 스톱워치 -->
     <div class="page">
-      <h1>자습자족</h1>
-      <p style="color:#aaa;">오른쪽으로 스와이프하세요</p>
-    </div>
+      <h2>타이머 & 무음 알람</h2>
+      
+      <!-- 타이머 및 유튜브 링크 -->
+      <div class="utility-box">
+        <div class="utility-title">타이머 & 유튜브 무음 알람</div>
+        <input type="text" id="yt-link" class="input-box" placeholder="유튜브 링크 입력" style="margin-bottom:8px; font-size:0.9rem;">
+        <div style="display:flex; gap:5px; margin-bottom:8px;">
+          <input type="number" id="timer-min" class="input-box" placeholder="분 입력" style="text-align:center;">
+          <button class="btn" onclick="startTimer()" style="padding:8px 12px; margin:0;">시작</button>
+          <button class="btn" onclick="stopTimer()" style="padding:8px 12px; margin:0; background:#b30000;">중지</button>
+        </div>
+        <div class="digital-timer" id="timer-display">00:00</div>
+      </div>
 
-    <!-- 2. 알람 -->
-    <div class="page">
-      <h2>자습 루틴 알람</h2>
-      <p style="text-align:center; color:#888; font-size:0.9rem; line-height:1.6; margin-bottom: 15px;">
-        <strong style="color:#ffcc00;">⚠️ 주의: 이어폰이 빠지면 스피커로 재생됩니다!</strong>
-      </p>
-      <div style="width: 90%; max-width: 400px; text-align: center;">
-        <input type="text" id="yt-link" class="input-box" placeholder="유튜브 링크 복사해서 붙여넣기" style="margin-bottom:10px;">
-        <button class="btn" onclick="saveYoutubeLink()">유튜브 알람 저장</button>
-        <button class="btn" onclick="testYoutubeAlarm()" style="background:#b30000;">테스트 실행</button>
+      <!-- 스톱워치 -->
+      <div class="utility-box">
+        <div class="utility-title">스톱워치</div>
+        <div class="digital-timer" id="stopwatch-display">00:00:00</div>
+        <div style="display:flex; justify-content:center; gap:8px;">
+          <button class="btn" onclick="startStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem;">시작</button>
+          <button class="btn" onclick="pauseStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem; background:#555;">정지</button>
+          <button class="btn" onclick="resetStopwatch()" style="padding:8px 14px; margin:0; font-size:0.9rem; background:#b30000;">초기화</button>
+        </div>
       </div>
     </div>
 
-    <!-- 3. 시간표 (급식표 대체) -->
+    <!-- [페이지 2] 중앙 메인: 자습자족 (첫 화면) -->
+    <div class="page">
+      <h1>자습자족</h1>
+      <p style="color:#aaa;">양옆으로 스와이프하여 기능을 전환하세요</p>
+    </div>
+
+    <!-- [페이지 3] 오른쪽 1: 시간표 -->
     <div class="page">
       <h2 style="margin-bottom: 5px;">시간표</h2>
       <table class="timetable">
@@ -124,30 +154,30 @@
       </table>
     </div>
 
-    <!-- 4. 클리어 메모지 (새 기능) -->
+    <!-- [페이지 4] 오른쪽 2: 클리어 메모지 (실시간 동기화) -->
     <div class="page">
-      <h2>클리어 메모지</h2>
-      <div class="memo-container">
-        <div class="memo-input-group">
-          <input type="text" id="memo-input" class="input-box" placeholder="오늘 할 일을 적어주세요">
-          <button class="btn" onclick="addMemo()" style="margin:0;">완료</button>
+      <div class="memo-board-container">
+        <div class="memo-header">📌 클리어 메모지</div>
+        <div class="memo-input-row">
+          <input type="text" id="memo-input" placeholder="오늘 할 일을 적어보세요">
+          <button onclick="addNewMemo()">완료</button>
         </div>
-        <div id="memo-list"></div>
-        <button id="delete-all-btn" class="btn" onclick="deleteAllMemos()" style="display:none; width:100%; background:#d32f2f; margin-top:20px;">모든 항목 지우기 (삭제)</button>
+        <div class="memo-scroll-area" id="memo-list-area">
+          <!-- 동기화된 메모 리스트가 들어오는 곳 -->
+        </div>
+        <button id="delete-all-btn" onclick="deleteAllFirebaseMemos()" style="display:none; width:100%; padding:10px; background:#b22222; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:10px;">모든 항목 삭제하기</button>
       </div>
     </div>
 
-    <!-- 5. 시계 -->
+    <!-- [페이지 5] 오른쪽 3: 시계 -->
     <div class="page">
       <div id="clock-display">00:00:00</div>
     </div>
 
-    <!-- 6. 검은 화면 (글씨 완전 삭제됨) -->
-    <div class="page" id="black-screen">
-      <!-- 절전 방지용 검은 화면. 내용 없음 -->
-    </div>
+    <!-- [페이지 6] 오른쪽 4: 검은 화면 (글씨 없음) -->
+    <div class="page" id="black-screen"></div>
 
-    <!-- 7. OMR 채점기 -->
+    <!-- [페이지 7] 오른쪽 5: OMR 채점기 -->
     <div class="page">
       <h2>정답 채점기</h2>
       <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">정답지가 있는 사진을 올리세요</p>
@@ -158,190 +188,227 @@
       <button class="btn" id="grade-btn" style="display:none; width: 100%; max-width: 400px; margin-top: 10px;">채점하기</button>
       <div id="grade-result" style="font-size: 1.5rem; margin-top: 15px; font-weight:bold;"></div>
     </div>
+
   </div>
 
   <script>
-    /* ================= 유튜브 알람 로직 ================= */
-    window.onload = () => {
-      const savedLink = localStorage.getItem('youtubeAlarmLink');
-      if(savedLink) document.getElementById('yt-link').value = savedLink;
+    /* ================= Firebase 연동 설정 ================= */
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdX2nqZYkH_V33s_bV8TRpa-rAIiBWbcQ",
+      authDomain: "test-eb398.firebaseapp.com",
+      databaseURL: "https://test-eb398-default-rtdb.firebaseio.com",
+      projectId: "test-eb398",
+      storageBucket: "test-eb398.firebasestorage.app",
+      messagingSenderId: "891253595501",
+      appId: "1:891253595501:web:3ddde2a9c70708c9100e64",
+      measurementId: "G-YHBCECWKPL"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    function saveYoutubeLink() {
-      const link = document.getElementById('yt-link').value;
-      if(link.includes('youtu')) {
-        localStorage.setItem('youtubeAlarmLink', link);
-        alert('유튜브 알람이 저장되었습니다!');
-      } else {
-        alert('올바른 유튜브 링크를 입력해주세요.');
+    /* ================= 시작할 때 메인 페이지(자습자족)로 고정 ================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      const swiper = document.getElementById('swiper');
+      // 2번째 페이지가 '자습자족' 메인 화면
+      swiper.scrollLeft = window.innerWidth * 1; 
+    });
+
+    /* ================= 타이머 & 무음 알람 로직 ================= */
+    let timerInterval = null;
+    function startTimer() {
+      const minInput = document.getElementById('timer-min').value;
+      let totalSeconds = parseInt(minInput) * 60;
+      if(isNaN(totalSeconds) || totalSeconds <= 0) {
+        alert('올바른 분을 입력해주세요.');
+        return;
       }
-    }
-
-    function fireYoutubeAlarm() {
-      const link = localStorage.getItem('youtubeAlarmLink');
-      if(link) window.location.href = link; 
-    }
-
-    function testYoutubeAlarm() {
-      fireYoutubeAlarm();
-    }
-
-    /* ================= 알람 타이머 및 시계 ================= */
-    setInterval(() => {
-      const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
-      const s = now.getSeconds();
-
-      document.getElementById('clock-display').innerText = 
-        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-      if (s === 0) {
-        if (h >= 9 && h < 12) {
-          if (m === 0 || m === 10) fireYoutubeAlarm();
-        } else if (h >= 12 && (h < 15 || (h === 15 && m <= 50))) {
-          if (m === 50 || m === 0) fireYoutubeAlarm();
+      
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if(totalSeconds <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('timer-display').innerText = "00:00";
+          // 시간이 다 되면 무음으로 유튜브 링크 열기
+          const link = document.getElementById('yt-link').value;
+          if(link.includes('youtu')) window.location.href = link;
+          return;
         }
-      }
-    }, 1000);
+        totalSeconds--;
+        let m = Math.floor(totalSeconds / 60);
+        let s = totalSeconds % 60;
+        document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }, 1000);
+    }
+    function stopTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('timer-display').innerText = "00:00";
+    }
 
-    /* ================= 클리어 메모지 로직 ================= */
-    let memos = [];
+    /* ================= 스톱워치 로직 ================= */
+    let swInterval = null;
+    let swSeconds = 0;
+    function startStopwatch() {
+      if(swInterval) return;
+      swInterval = setInterval(() => {
+        swSeconds++;
+        let h = Math.floor(swSeconds / 3600);
+        let m = Math.floor((swSeconds % 3600) / 60);
+        let s = swSeconds % 60;
+        document.getElementById('stopwatch-display').innerText = 
+          `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }, 1000);
+    }
+    function pauseStopwatch() {
+      clearInterval(swInterval);
+      swInterval = null;
+    }
+    function resetStopwatch() {
+      clearInterval(swInterval);
+      swInterval = null;
+      swSeconds = 0;
+      document.getElementById('stopwatch-display').innerText = "00:00:00";
+    }
 
-    function addMemo() {
+    /* ================= 클리어 메모지 (Firebase 실시간 동기화) ================= */
+    function addNewMemo() {
       const input = document.getElementById('memo-input');
       const text = input.value.trim();
-      if(text) {
-        memos.push({ text: text, progress: 0, done: false, showSlider: false });
-        input.value = '';
-        renderMemos();
-      }
+      if(!text) return;
+
+      const newMemoRef = db.ref('memos').push();
+      newMemoRef.set({
+        text: text,
+        progress: 0,
+        done: false,
+        showSlider: false
+      });
+      input.value = '';
     }
 
-    // 체크 버튼을 누르면 게이지 바(슬라이더)가 열림
-    function toggleSlider(index) {
-      if (!memos[index].done) {
-        memos[index].showSlider = !memos[index].showSlider;
-        renderMemos();
-      }
-    }
+    // 데이터베이스 변경 감지 및 렌더링
+    db.ref('memos').on('value', (snapshot) => {
+      const data = snapshot.val();
+      const listArea = document.getElementById('memo-list-area');
+      listArea.innerHTML = '';
 
-    // 슬라이더 조절 시 퍼센트 반영, 100% 달성 시 완료(취소선) 처리
-    function updateProgress(index, value) {
-      memos[index].progress = parseInt(value);
-      document.getElementById(`prog-val-${index}`).innerText = value + '%';
-      
-      if(value == 100) {
-        memos[index].done = true;
-        memos[index].showSlider = false; // 완료되면 슬라이더 숨김
-        renderMemos();
+      if (!data) {
+        document.getElementById('delete-all-btn').style.display = 'none';
+        return;
       }
-    }
 
-    function renderMemos() {
-      const list = document.getElementById('memo-list');
-      list.innerHTML = '';
-      
       let allDone = true;
-      if (memos.length === 0) allDone = false;
+      let count = 0;
 
-      memos.forEach((m, idx) => {
-        if (!m.done) allDone = false;
+      Object.keys(data).forEach(id => {
+        const m = data[id];
+        count++;
+        if(!m.done) allDone = false;
 
-        const item = document.createElement('div');
-        item.className = 'memo-item';
-        
-        const row = document.createElement('div');
-        row.className = 'memo-row';
-        
-        // 체크박스 역할을 하는 이모지 버튼
+        const card = document.createElement('div');
+        card.className = 'memo-card';
+
+        const line = document.createElement('div');
+        line.className = 'memo-line';
+
         const checkBtn = document.createElement('button');
-        checkBtn.className = 'memo-check-btn';
+        checkBtn.className = 'memo-check-toggle';
         checkBtn.innerHTML = m.done ? '✅' : '⬜';
-        checkBtn.onclick = () => toggleSlider(idx);
+        checkBtn.onclick = () => {
+          if(!m.done) {
+            db.ref(`memos/${id}`).update({ showSlider: !m.showSlider });
+          }
+        };
 
-        // 메모 텍스트 (완료 시 strikethrough 적용)
-        const textSpan = document.createElement('span');
-        textSpan.className = 'memo-text';
-        textSpan.innerText = m.text;
-        if(m.done) textSpan.classList.add('strikethrough');
+        const textContent = document.createElement('span');
+        textContent.className = 'memo-text-content';
+        textContent.innerText = m.text;
+        if(m.done) textContent.classList.add('strikethrough');
 
-        row.appendChild(checkBtn);
-        row.appendChild(textSpan);
-        item.appendChild(row);
+        line.appendChild(checkBtn);
+        line.appendChild(textContent);
+        card.appendChild(line);
 
-        // 슬라이더 영역 (체크 버튼을 눌렀을 때만 나타남)
+        // 슬라이더 바 표시
         if(m.showSlider && !m.done) {
-          const sliderDiv = document.createElement('div');
-          sliderDiv.className = 'memo-slider-container';
-          sliderDiv.innerHTML = `
-            <input type="range" min="0" max="100" value="${m.progress}" oninput="updateProgress(${idx}, this.value)">
-            <span id="prog-val-${idx}" style="min-width: 45px; text-align: right; font-weight: bold; color: #4CAF50;">${m.progress}%</span>
+          const sliderBox = document.createElement('div');
+          sliderBox.className = 'memo-slider-box';
+          sliderBox.innerHTML = `
+            <input type="range" min="0" max="100" value="${m.progress}" onchange="updateFirebaseProgress('${id}', this.value)">
+            <span style="font-weight:bold; font-size:0.9rem; color:#5c4033; min-width:35px; text-align:right;">${m.progress}%</span>
           `;
-          item.appendChild(sliderDiv);
+          card.appendChild(sliderBox);
         }
-        list.appendChild(item);
+
+        listArea.appendChild(card);
       });
 
-      // 모든 항목이 100%(완료)일 때만 삭제 버튼 표시
-      document.getElementById('delete-all-btn').style.display = allDone ? 'block' : 'none';
+      document.getElementById('delete-all-btn').style.display = (count > 0 && allDone) ? 'block' : 'none';
+    });
+
+    function updateFirebaseProgress(id, val) {
+      let progress = parseInt(val);
+      let updateData = { progress: progress };
+      if(progress === 100) {
+        updateData.done = true;
+        updateData.showSlider = false;
+      }
+      db.ref(`memos/${id}`).update(updateData);
     }
 
-    function deleteAllMemos() {
-      memos = []; // 배열 초기화
-      renderMemos();
+    function deleteAllFirebaseMemos() {
+      db.ref('memos').remove();
     }
 
-    /* ================= 화면 꺼짐 방지 ================= */
+    /* ================= 시계 및 화면 꺼짐 방지 ================= */
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock-display').innerText = 
+        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    }, 1000);
+
     let wakeLock = null;
-    const requestWakeLock = async () => {
+    document.body.addEventListener('click', async () => {
       try {
         if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
       } catch (err) {}
-    };
-    document.body.addEventListener('click', requestWakeLock);
+    });
 
     /* ================= OMR 채점기 ================= */
     let extractedAnswers = [];
     document.getElementById('answer-image').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
-
       const status = document.getElementById('ocr-status');
-      status.innerText = "정답을 분석 중입니다... (약 5~10초)";
+      status.innerText = "정답 분석 중... (5~10초 소요)";
       
-      Tesseract.recognize(file, 'eng', { logger: m => console.log(m) })
+      Tesseract.recognize(file, 'eng', { logger: m => {} })
         .then(({ data: { text } }) => {
           const numbers = text.replace(/[^1-5]/g, '').split('').map(Number).filter(n => n >= 1 && n <= 5);
           if (numbers.length === 0) {
-            status.innerText = "정답(1~5 숫자)을 인식하지 못했습니다.";
+            status.innerText = "정답을 인식하지 못했습니다.";
             return;
           }
           extractedAnswers = numbers.slice(0, 20); 
-          status.innerText = "정답 인식 완료! (내용은 숨겨졌습니다)";
+          status.innerText = "정답 인식 완료! (내용은 숨겨짐)";
           generateOMR(extractedAnswers.length);
         });
     });
 
-    function generateOMR(questionCount) {
+    function generateOMR(count) {
       const board = document.getElementById('omr-board');
       board.innerHTML = '';
-      for(let i = 0; i < questionCount; i++) {
+      for(let i = 0; i < count; i++) {
         let row = document.createElement('div');
         row.className = 'omr-row';
         row.innerHTML = `<span style="width: 30px; font-weight:bold;">${i+1}.</span>
-          <div>
-            ${[1,2,3,4,5].map(j => `<input type="radio" name="q${i}" id="q${i}_o${j}" value="${j}"><label for="q${i}_o${j}">${j}</label>`).join('')}
-          </div>`;
+          <div>${[1,2,3,4,5].map(j => `<input type="radio" name="q${i}" id="q${i}_o${j}" value="${j}"><label for="q${i}_o${j}">${j}</label>`).join('')}</div>`;
         board.appendChild(row);
       }
       document.getElementById('grade-btn').style.display = 'block';
     }
 
     document.getElementById('grade-btn').addEventListener('click', () => {
-      let score = 0;
-      let total = extractedAnswers.length;
-      let wrongList = [];
+      let score = 0, total = extractedAnswers.length, wrongList = [];
       for(let i = 0; i < total; i++) {
         const selected = document.querySelector(`input[name="q${i}"]:checked`);
         if (selected && parseInt(selected.value) === extractedAnswers[i]) score++;
@@ -351,7 +418,7 @@
         <span style="font-size:1rem; color:#FF5252;">틀린 문항: ${wrongList.length > 0 ? wrongList.join(', ') : '없음!'}</span>`;
     });
 
-    /* ================= 스와이프 인디케이터 ================= */
+    /* ================= 스와이프 인디케이터 연동 ================= */
     const swiper = document.getElementById('swiper');
     const dots = document.querySelectorAll('.dot');
     swiper.addEventListener('scroll', () => {
