@@ -42,8 +42,25 @@
     .btn { padding: 12px 24px; background: #333; color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
     .btn:active { background: #555; }
     
-    /* 텍스트 입력창 스타일 */
-    .input-box { width: 90%; max-width: 400px; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+    .input-box { width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1rem; text-align: center; }
+    
+    /* 시간표 스타일 */
+    .timetable { width: 95%; max-width: 500px; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; text-align: center; }
+    .timetable th, .timetable td { border: 1px solid #444; padding: 12px 4px; word-break: keep-all; }
+    .timetable th { background: #333; font-weight: bold; color: #ddd; }
+    .timetable td { background: #1a1a1a; }
+
+    /* 클리어 메모지 스타일 */
+    .memo-container { width: 95%; max-width: 400px; margin-top: 15px; }
+    .memo-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+    .memo-item { background: #222; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; }
+    .memo-row { display: flex; align-items: center; gap: 12px; }
+    .memo-check-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: white; padding: 0; }
+    .memo-text { flex: 1; font-size: 1.1rem; line-height: 1.4; transition: all 0.3s; }
+    .strikethrough { text-decoration: line-through; color: #777; }
+    
+    .memo-slider-container { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: #111; padding: 10px 15px; border-radius: 8px; }
+    .memo-slider-container input[type="range"] { flex: 1; accent-color: #4CAF50; }
     
     #clock-display { font-size: 5rem; font-weight: bold; letter-spacing: 2px; }
     #black-screen { background: black; cursor: pointer; }
@@ -62,52 +79,78 @@
 <body>
 
   <div class="indicator" id="indicator">
-    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <!-- 총 7개 페이지 -->
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
   </div>
 
   <div class="swiper-container" id="swiper">
-    <!-- 1. 메인 (자습자족) -->
+    <!-- 1. 메인 -->
     <div class="page">
       <h1>자습자족</h1>
       <p style="color:#aaa;">오른쪽으로 스와이프하세요</p>
     </div>
 
-    <!-- 2. 알람 (유튜브 링크 입력) -->
+    <!-- 2. 알람 -->
     <div class="page">
       <h2>자습 루틴 알람</h2>
       <p style="text-align:center; color:#888; font-size:0.9rem; line-height:1.6; margin-bottom: 15px;">
-        09:00~12:00 -> [정각: 쉬는시간 / 10분: 수업]<br>
-        12:00~15:50 -> [50분: 쉬는시간 / 정각: 수업]<br>
         <strong style="color:#ffcc00;">⚠️ 주의: 이어폰이 빠지면 스피커로 재생됩니다!</strong>
       </p>
-      
-      <input type="text" id="yt-link" class="input-box" placeholder="알람용 유튜브 링크 복사해서 붙여넣기">
-      <button class="btn" onclick="saveYoutubeLink()">유튜브 알람 저장</button>
-      <button class="btn" onclick="testYoutubeAlarm()" style="background:#b30000;">테스트 실행</button>
-    </div>
-
-    <!-- 3. 급식 -->
-    <div class="page">
-      <h2>중앙고 오늘의 급식</h2>
-      <div id="meal-content" style="background:#222; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; line-height: 1.8;">
-        불러오는 중...
+      <div style="width: 90%; max-width: 400px; text-align: center;">
+        <input type="text" id="yt-link" class="input-box" placeholder="유튜브 링크 복사해서 붙여넣기" style="margin-bottom:10px;">
+        <button class="btn" onclick="saveYoutubeLink()">유튜브 알람 저장</button>
+        <button class="btn" onclick="testYoutubeAlarm()" style="background:#b30000;">테스트 실행</button>
       </div>
     </div>
 
-    <!-- 4. 시계 -->
+    <!-- 3. 시간표 (급식표 대체) -->
+    <div class="page">
+      <h2 style="margin-bottom: 5px;">시간표</h2>
+      <table class="timetable">
+        <thead>
+          <tr>
+            <th>교시</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>영어II</td><td>확률과 통계</td><td>물질과 에너지</td><td style="color:#81d4fa;">일본어</td><td style="color:#a5d6a7;">지정학과<br>글로벌이슈</td></tr>
+          <tr><td>2</td><td>미적분II</td><td>화법과 언어</td><td>스포츠 생활2</td><td style="color:#a5d6a7;">지정학과<br>글로벌이슈</td><td style="color:#81d4fa;">일본어</td></tr>
+          <tr><td>3</td><td>확률과 통계</td><td>역학과 에너지</td><td>영어II</td><td>물질과 에너지</td><td>역학과 에너지</td></tr>
+          <tr><td>4</td><td>영어II</td><td>미적분II</td><td>확률과 통계</td><td>지구시스템과학</td><td>지구시스템과학</td></tr>
+          <tr><td>5</td><td>지구시스템과학</td><td>영어II</td><td>자율</td><td>미적분II</td><td>화법과 언어</td></tr>
+          <tr><td>6</td><td style="color:#81d4fa;">일본어</td><td style="color:#a5d6a7;">지정학과<br>글로벌이슈</td><td>자치</td><td>화법과 언어</td><td>물질과 에너지</td></tr>
+          <tr><td>7</td><td>역학과 에너지</td><td>창체1</td><td></td><td>스포츠 생활2</td><td>창체2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 4. 클리어 메모지 (새 기능) -->
+    <div class="page">
+      <h2>클리어 메모지</h2>
+      <div class="memo-container">
+        <div class="memo-input-group">
+          <input type="text" id="memo-input" class="input-box" placeholder="오늘 할 일을 적어주세요">
+          <button class="btn" onclick="addMemo()" style="margin:0;">완료</button>
+        </div>
+        <div id="memo-list"></div>
+        <button id="delete-all-btn" class="btn" onclick="deleteAllMemos()" style="display:none; width:100%; background:#d32f2f; margin-top:20px;">모든 항목 지우기 (삭제)</button>
+      </div>
+    </div>
+
+    <!-- 5. 시계 -->
     <div class="page">
       <div id="clock-display">00:00:00</div>
     </div>
 
-    <!-- 5. 검은 화면 -->
+    <!-- 6. 검은 화면 (글씨 완전 삭제됨) -->
     <div class="page" id="black-screen">
-      <p style="color:#333; font-size:0.8rem;">(스와이프하면 돌아갑니다. 화면 꺼짐 방지 작동 중)</p>
+      <!-- 절전 방지용 검은 화면. 내용 없음 -->
     </div>
 
-    <!-- 6. OMR 채점기 -->
+    <!-- 7. OMR 채점기 -->
     <div class="page">
       <h2>정답 채점기</h2>
-      <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">정답지가 있는 사진을 올리세요 (텍스트 숨김 처리)</p>
+      <p style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">정답지가 있는 사진을 올리세요</p>
       <input type="file" id="answer-image" accept="image/*" class="btn" style="font-size: 0.9rem; width:90%; max-width:400px;">
       <div id="ocr-status" style="color:#4CAF50; font-size:0.9rem; margin-top:5px;"></div>
       
@@ -119,7 +162,6 @@
 
   <script>
     /* ================= 유튜브 알람 로직 ================= */
-    // 기존에 저장된 유튜브 링크 불러오기
     window.onload = () => {
       const savedLink = localStorage.getItem('youtubeAlarmLink');
       if(savedLink) document.getElementById('yt-link').value = savedLink;
@@ -129,7 +171,7 @@
       const link = document.getElementById('yt-link').value;
       if(link.includes('youtu')) {
         localStorage.setItem('youtubeAlarmLink', link);
-        alert('유튜브 알람이 저장되었습니다! 시간이 되면 자동으로 실행됩니다.');
+        alert('유튜브 알람이 저장되었습니다!');
       } else {
         alert('올바른 유튜브 링크를 입력해주세요.');
       }
@@ -137,10 +179,7 @@
 
     function fireYoutubeAlarm() {
       const link = localStorage.getItem('youtubeAlarmLink');
-      if(link) {
-        // 시간이 되면 현재 창을 유튜브 링크로 덮어씌워서 실행시킴 (안드로이드에서는 유튜브 앱이 켜질 확률이 높음)
-        window.location.href = link; 
-      }
+      if(link) window.location.href = link; 
     }
 
     function testYoutubeAlarm() {
@@ -157,41 +196,110 @@
       document.getElementById('clock-display').innerText = 
         `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 
-      // 정각(0초)일 때만 알람 시간 검사
       if (s === 0) {
-        // 오전 9시 ~ 12시 이전
         if (h >= 9 && h < 12) {
           if (m === 0 || m === 10) fireYoutubeAlarm();
-        } 
-        // 12시 ~ 오후 3시 50분
-        else if (h >= 12 && (h < 15 || (h === 15 && m <= 50))) {
+        } else if (h >= 12 && (h < 15 || (h === 15 && m <= 50))) {
           if (m === 50 || m === 0) fireYoutubeAlarm();
         }
       }
     }, 1000);
 
-    /* ================= 화면 꺼짐 방지 (검은 화면 유지용) ================= */
+    /* ================= 클리어 메모지 로직 ================= */
+    let memos = [];
+
+    function addMemo() {
+      const input = document.getElementById('memo-input');
+      const text = input.value.trim();
+      if(text) {
+        memos.push({ text: text, progress: 0, done: false, showSlider: false });
+        input.value = '';
+        renderMemos();
+      }
+    }
+
+    // 체크 버튼을 누르면 게이지 바(슬라이더)가 열림
+    function toggleSlider(index) {
+      if (!memos[index].done) {
+        memos[index].showSlider = !memos[index].showSlider;
+        renderMemos();
+      }
+    }
+
+    // 슬라이더 조절 시 퍼센트 반영, 100% 달성 시 완료(취소선) 처리
+    function updateProgress(index, value) {
+      memos[index].progress = parseInt(value);
+      document.getElementById(`prog-val-${index}`).innerText = value + '%';
+      
+      if(value == 100) {
+        memos[index].done = true;
+        memos[index].showSlider = false; // 완료되면 슬라이더 숨김
+        renderMemos();
+      }
+    }
+
+    function renderMemos() {
+      const list = document.getElementById('memo-list');
+      list.innerHTML = '';
+      
+      let allDone = true;
+      if (memos.length === 0) allDone = false;
+
+      memos.forEach((m, idx) => {
+        if (!m.done) allDone = false;
+
+        const item = document.createElement('div');
+        item.className = 'memo-item';
+        
+        const row = document.createElement('div');
+        row.className = 'memo-row';
+        
+        // 체크박스 역할을 하는 이모지 버튼
+        const checkBtn = document.createElement('button');
+        checkBtn.className = 'memo-check-btn';
+        checkBtn.innerHTML = m.done ? '✅' : '⬜';
+        checkBtn.onclick = () => toggleSlider(idx);
+
+        // 메모 텍스트 (완료 시 strikethrough 적용)
+        const textSpan = document.createElement('span');
+        textSpan.className = 'memo-text';
+        textSpan.innerText = m.text;
+        if(m.done) textSpan.classList.add('strikethrough');
+
+        row.appendChild(checkBtn);
+        row.appendChild(textSpan);
+        item.appendChild(row);
+
+        // 슬라이더 영역 (체크 버튼을 눌렀을 때만 나타남)
+        if(m.showSlider && !m.done) {
+          const sliderDiv = document.createElement('div');
+          sliderDiv.className = 'memo-slider-container';
+          sliderDiv.innerHTML = `
+            <input type="range" min="0" max="100" value="${m.progress}" oninput="updateProgress(${idx}, this.value)">
+            <span id="prog-val-${idx}" style="min-width: 45px; text-align: right; font-weight: bold; color: #4CAF50;">${m.progress}%</span>
+          `;
+          item.appendChild(sliderDiv);
+        }
+        list.appendChild(item);
+      });
+
+      // 모든 항목이 100%(완료)일 때만 삭제 버튼 표시
+      document.getElementById('delete-all-btn').style.display = allDone ? 'block' : 'none';
+    }
+
+    function deleteAllMemos() {
+      memos = []; // 배열 초기화
+      renderMemos();
+    }
+
+    /* ================= 화면 꺼짐 방지 ================= */
     let wakeLock = null;
     const requestWakeLock = async () => {
       try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-        }
-      } catch (err) { console.log('Wake Lock Error:', err); }
+        if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+      } catch (err) {}
     };
-    
-    // 화면을 터치하거나 넘길 때 절전 방지 모드 활성화 (브라우저 정책상 터치 후 실행 가능)
     document.body.addEventListener('click', requestWakeLock);
-
-    /* ================= 급식 API 임시 로직 ================= */
-    function fetchMeal() {
-      const mealDiv = document.getElementById('meal-content');
-      mealDiv.innerHTML = `
-        <strong style="font-size:1.2rem; color:#4CAF50;">[오늘의 급식]</strong><br><br>
-        현미밥<br>얼큰 순대국밥<br>수제 떡갈비구이<br>깍두기<br>초코우유
-      `;
-    }
-    fetchMeal();
 
     /* ================= OMR 채점기 ================= */
     let extractedAnswers = [];
@@ -200,7 +308,7 @@
       if (!file) return;
 
       const status = document.getElementById('ocr-status');
-      status.innerText = "정답을 분석하고 사진을 숨기는 중... (약 5~10초 소요)";
+      status.innerText = "정답을 분석 중입니다... (약 5~10초)";
       
       Tesseract.recognize(file, 'eng', { logger: m => console.log(m) })
         .then(({ data: { text } }) => {
@@ -210,7 +318,7 @@
             return;
           }
           extractedAnswers = numbers.slice(0, 20); 
-          status.innerText = "정답 인식 완료! (이미지와 정답은 숨겨졌습니다)";
+          status.innerText = "정답 인식 완료! (내용은 숨겨졌습니다)";
           generateOMR(extractedAnswers.length);
         });
     });
