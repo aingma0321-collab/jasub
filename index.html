@@ -47,17 +47,16 @@
     .btn { padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #333; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
     .btn:active { background: #333; }
     
-    /* 올블랙 입력창 스타일 */
     .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0d0d0d; color: #fff; font-size: 1rem; text-align: center; }
     .input-box::placeholder { color: #666; }
 
-    /* 시간표 스타일 (올블랙) */
+    /* 시간표 스타일 */
     .timetable { width: 95%; max-width: 500px; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; text-align: center; }
     .timetable th, .timetable td { border: 1px solid #222; padding: 12px 4px; word-break: keep-all; }
     .timetable th { background: #111; font-weight: bold; color: #ddd; }
     .timetable td { background: #050505; color: #ddd; }
 
-    /* 클리어 메모지 (올블랙 스타일) */
+    /* 클리어 메모지 스타일 */
     .memo-board-container { width: 100%; max-width: 420px; height: 65vh; display: flex; flex-direction: column; background: #0a0a0a; color: #fff; border: 1px solid #222; border-radius: 12px; padding: 20px; position: relative; }
     .memo-header { font-family: 'Courier New', Courier, monospace; font-size: 1.4rem; font-weight: bold; border-bottom: 2px dashed #333; padding-bottom: 8px; margin-bottom: 12px; color: #fff; text-align: center; }
     .memo-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -75,12 +74,14 @@
     .memo-slider-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #000; padding: 8px 12px; border-radius: 6px; border: 1px solid #222; }
     .memo-slider-box input[type="range"] { flex: 1; accent-color: #888; }
 
-    /* 타이머 / 스톱워치 박스 (올블랙) */
+    /* 타이머 / 스톱워치 박스 */
     .utility-box { background: #0a0a0a; padding: 15px; border-radius: 10px; width: 90%; max-width: 400px; margin-bottom: 15px; text-align: center; border: 1px solid #222; }
     .utility-title { font-size: 1.1rem; color: #aaa; margin-bottom: 8px; font-weight: bold; }
     .digital-timer { font-size: 2.2rem; font-family: monospace; font-weight: bold; margin: 8px 0; color: #fff; }
 
-    #clock-display { font-size: 5rem; font-weight: bold; letter-spacing: 2px; color: #fff; }
+    #clock-display { font-size: 4rem; font-weight: bold; letter-spacing: 2px; color: #fff; margin-bottom: 10px; }
+    #routine-status { font-size: 0.95rem; color: #888; background: #0a0a0a; padding: 10px 15px; border-radius: 8px; border: 1px solid #222; margin-top: 10px; text-align: center; max-width: 400px; }
+    
     #black-screen { background: #000000; cursor: pointer; }
     
     .omr-container { width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; text-align: left; background: #0a0a0a; border: 1px solid #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
@@ -168,9 +169,10 @@
       </div>
     </div>
 
-    <!-- [페이지 5] 오른쪽 3: 시계 -->
+    <!-- [페이지 5] 오른쪽 3: 시계 & 정각 루틴 알람 -->
     <div class="page">
       <div id="clock-display">00:00:00</div>
+      <div id="routine-status">루틴 알람 대기 중 (09:00 ~ 15:50)</div>
     </div>
 
     <!-- [페이지 6] 오른쪽 4: 검은 화면 -->
@@ -349,11 +351,49 @@
       db.ref('memos').remove();
     }
 
+    /* ================= 시계 및 엄격한 시간 제한 루틴 알람 로직 ================= */
     setInterval(() => {
       const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+
       document.getElementById('clock-display').innerText = 
-        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+      let routineText = "루틴 알람 대기 중 (09:00 ~ 15:50)";
+
+      // 1. 엄격한 시간 범위 체크: 오전 9시(9시 0분 0초)부터 오후 3시 50분(15시 50분 0초) 사이에만 작동
+      const currentTimeInMin = h * 60 + m;
+      const startTimeInMin = 9 * 60;       // 09:00
+      const endTimeInMin = 15 * 60 + 50;   // 15:50
+
+      if (currentTimeInMin >= startTimeInMin && currentTimeInMin <= endTimeInMin) {
+        // 오전 9시 ~ 12시 미만
+        if (h >= 9 && h < 12) {
+          if (m === 0 && s === 0) triggerRoutineAlarm();
+          if (m === 10 && s === 0) triggerRoutineAlarm();
+          routineText = `[오전 루틴 작동중] (정각:휴식 / 10분:수업)`;
+        } 
+        // 12시 ~ 오후 3시 50분 이하
+        else if (h >= 12 && (h < 15 || (h === 15 && m <= 50))) {
+          if (m === 50 && s === 0) triggerRoutineAlarm();
+          if (m === 0 && s === 0) triggerRoutineAlarm();
+          routineText = `[오후 루틴 작동중] (50분:휴식 / 정각:수업)`;
+        }
+      } else {
+        routineText = "알람 비활성화 시간 (09:00 ~ 15:50 외)";
+      }
+
+      document.getElementById('routine-status').innerText = routineText;
     }, 1000);
+
+    function triggerRoutineAlarm() {
+      const link = document.getElementById('yt-link').value;
+      if(link.includes('youtu')) {
+        window.location.href = link;
+      }
+    }
 
     let wakeLock = null;
     document.body.addEventListener('click', async () => {
