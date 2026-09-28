@@ -8,10 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>자습자족</title>
   
-  <!-- Firebase (Realtime Database) SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
   <style>
@@ -41,7 +39,7 @@
       background: #000000;
     }
 
-    h1 { font-size: 3rem; margin-bottom: 20px; color: #fff; }
+    h1 { font-size: 3rem; margin-bottom: 10px; color: #fff; }
     h2 { font-size: 1.5rem; margin-bottom: 15px; color: #ccc; }
     
     .btn { padding: 12px 24px; background: #1a1a1a; color: white; border: 1px solid #333; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin: 5px; }
@@ -50,13 +48,11 @@
     .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0d0d0d; color: #fff; font-size: 1rem; text-align: center; }
     .input-box::placeholder { color: #666; }
 
-    /* 시간표 스타일 */
     .timetable { width: 95%; max-width: 500px; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; text-align: center; }
     .timetable th, .timetable td { border: 1px solid #222; padding: 12px 4px; word-break: keep-all; }
     .timetable th { background: #111; font-weight: bold; color: #ddd; }
     .timetable td { background: #050505; color: #ddd; }
 
-    /* 클리어 메모지 스타일 */
     .memo-board-container { width: 100%; max-width: 420px; height: 65vh; display: flex; flex-direction: column; background: #0a0a0a; color: #fff; border: 1px solid #222; border-radius: 12px; padding: 20px; position: relative; }
     .memo-header { font-family: 'Courier New', Courier, monospace; font-size: 1.4rem; font-weight: bold; border-bottom: 2px dashed #333; padding-bottom: 8px; margin-bottom: 12px; color: #fff; text-align: center; }
     .memo-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -74,13 +70,11 @@
     .memo-slider-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; background: #000; padding: 8px 12px; border-radius: 6px; border: 1px solid #222; }
     .memo-slider-box input[type="range"] { flex: 1; accent-color: #888; }
 
-    /* 타이머 / 스톱워치 박스 */
     .utility-box { background: #0a0a0a; padding: 15px; border-radius: 10px; width: 90%; max-width: 400px; margin-bottom: 15px; text-align: center; border: 1px solid #222; }
     .utility-title { font-size: 1.1rem; color: #aaa; margin-bottom: 8px; font-weight: bold; }
     .digital-timer { font-size: 2.2rem; font-family: monospace; font-weight: bold; margin: 8px 0; color: #fff; }
 
     #clock-display { font-size: 4rem; font-weight: bold; letter-spacing: 2px; color: #fff; margin-bottom: 10px; }
-    
     #black-screen { background: #000000; cursor: pointer; }
     
     .omr-container { width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; text-align: left; background: #0a0a0a; border: 1px solid #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
@@ -130,7 +124,8 @@
     <!-- [페이지 2] 중앙 메인: 자습자족 (첫 화면) -->
     <div class="page">
       <h1>자습자족</h1>
-      <p style="color:#666;">자습을 위한, 자습에 의한, 자습에 대한 모든것</p>
+      <p style="color:#666; margin-bottom: 20px;">양옆으로 스와이프하여 기능을 전환하세요</p>
+      <button id="install-btn" class="btn" style="display:none; background:#222; border-color:#555; font-weight:bold;">📲 홈 화면에 앱으로 설치하기</button>
     </div>
 
     <!-- [페이지 3] 오른쪽 1: 시간표 -->
@@ -206,6 +201,22 @@
     window.addEventListener('DOMContentLoaded', () => {
       const swiper = document.getElementById('swiper');
       swiper.scrollLeft = window.innerWidth * 1; 
+    });
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('install-btn');
+      if(installBtn) installBtn.style.display = 'block';
+    });
+
+    document.getElementById('install-btn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
     });
 
     let timerInterval = null;
