@@ -86,9 +86,18 @@
     .indicator { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
     .dot { width: 8px; height: 8px; background: #333; border-radius: 50%; }
     .dot.active { background: white; }
+    
+    /* 앱 설치 유도 팝업 */
+    #install-banner { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #222; border: 1px solid #555; padding: 15px 20px; border-radius: 10px; z-index: 999; box-shadow: 0 5px 15px rgba(0,0,0,0.8); text-align: center; width: 90%; max-width: 350px; }
   </style>
 </head>
 <body>
+
+  <div id="install-banner">
+    <p style="margin-bottom: 10px; font-weight: bold;">앱으로 설치해서 사용하시겠습니까?</p>
+    <button id="install-btn" class="btn" style="background:#4CAF50; border:none; padding:8px 16px;">네, 설치할게요</button>
+    <button id="close-banner" class="btn" style="background:#555; border:none; padding:8px 16px;">닫기</button>
+  </div>
 
   <div class="indicator" id="indicator">
     <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -121,11 +130,10 @@
       </div>
     </div>
 
-    <!-- [페이지 2] 중앙 메인: 자습자족 (첫 화면) -->
+    <!-- [페이지 2] 중앙 메인: 자습자족 -->
     <div class="page">
       <h1>자습자족</h1>
       <p style="color:#666; margin-bottom: 20px;">양옆으로 스와이프하여 기능을 전환하세요</p>
-      <button id="install-btn" class="btn" style="display:none; background:#222; border-color:#555; font-weight:bold;">📲 홈 화면에 앱으로 설치하기</button>
     </div>
 
     <!-- [페이지 3] 오른쪽 1: 시간표 -->
@@ -149,7 +157,7 @@
       </table>
     </div>
 
-    <!-- [페이지 4] 오른쪽 2: 클리어 메모지 (올블랙) -->
+    <!-- [페이지 4] 오른쪽 2: 클리어 메모지 -->
     <div class="page">
       <div class="memo-board-container">
         <div class="memo-header">📌 클리어 메모지</div>
@@ -181,10 +189,41 @@
       <button class="btn" id="grade-btn" style="display:none; width: 100%; max-width: 400px; margin-top: 10px;">채점하기</button>
       <div id="grade-result" style="font-size: 1.5rem; margin-top: 15px; font-weight:bold; color:#fff;"></div>
     </div>
-
   </div>
 
   <script>
+    /* ================= PWA 서비스 워커 등록 (가장 중요한 부분 복구) ================= */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker 등록 성공!', reg))
+          .catch(err => console.log('Service Worker 등록 실패', err));
+      });
+    }
+
+    /* ================= 앱 설치 유도 로직 ================= */
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // 설치 가능할 때 상단에 배너 띄우기
+      document.getElementById('install-banner').style.display = 'block';
+    });
+
+    document.getElementById('install-btn').addEventListener('click', async () => {
+      document.getElementById('install-banner').style.display = 'none';
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+
+    document.getElementById('close-banner').addEventListener('click', () => {
+      document.getElementById('install-banner').style.display = 'none';
+    });
+
+    /* ================= Firebase 설정 ================= */
     const firebaseConfig = {
       apiKey: "AIzaSyBdX2nqZYkH_V33s_bV8TRpa-rAIiBWbcQ",
       authDomain: "test-eb398.firebaseapp.com",
@@ -203,22 +242,7 @@
       swiper.scrollLeft = window.innerWidth * 1; 
     });
 
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const installBtn = document.getElementById('install-btn');
-      if(installBtn) installBtn.style.display = 'block';
-    });
-
-    document.getElementById('install-btn').addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      }
-    });
-
+    /* ================= 타이머 & 스톱워치 ================= */
     let timerInterval = null;
     function startTimer() {
       const minInput = document.getElementById('timer-min').value;
@@ -270,18 +294,14 @@
       document.getElementById('stopwatch-display').innerText = "00:00:00";
     }
 
+    /* ================= 클리어 메모지 ================= */
     function addNewMemo() {
       const input = document.getElementById('memo-input');
       const text = input.value.trim();
       if(!text) return;
 
       const newMemoRef = db.ref('memos').push();
-      newMemoRef.set({
-        text: text,
-        progress: 0,
-        done: false,
-        showSlider: false
-      });
+      newMemoRef.set({ text: text, progress: 0, done: false, showSlider: false });
       input.value = '';
     }
 
@@ -305,18 +325,13 @@
 
         const card = document.createElement('div');
         card.className = 'memo-card';
-
         const line = document.createElement('div');
         line.className = 'memo-line';
 
         const checkBtn = document.createElement('button');
         checkBtn.className = 'memo-check-toggle';
         checkBtn.innerHTML = m.done ? '✅' : '⬜';
-        checkBtn.onclick = () => {
-          if(!m.done) {
-            db.ref(`memos/${id}`).update({ showSlider: !m.showSlider });
-          }
-        };
+        checkBtn.onclick = () => { if(!m.done) db.ref(`memos/${id}`).update({ showSlider: !m.showSlider }); };
 
         const textContent = document.createElement('span');
         textContent.className = 'memo-text-content';
@@ -336,27 +351,21 @@
           `;
           card.appendChild(sliderBox);
         }
-
         listArea.appendChild(card);
       });
-
       document.getElementById('delete-all-btn').style.display = (count > 0 && allDone) ? 'block' : 'none';
     });
 
     function updateFirebaseProgress(id, val) {
       let progress = parseInt(val);
       let updateData = { progress: progress };
-      if(progress === 100) {
-        updateData.done = true;
-        updateData.showSlider = false;
-      }
+      if(progress === 100) { updateData.done = true; updateData.showSlider = false; }
       db.ref(`memos/${id}`).update(updateData);
     }
 
-    function deleteAllFirebaseMemos() {
-      db.ref('memos').remove();
-    }
+    function deleteAllFirebaseMemos() { db.ref('memos').remove(); }
 
+    /* ================= 시계 & 절전 방지 ================= */
     setInterval(() => {
       const now = new Date();
       document.getElementById('clock-display').innerText = 
@@ -365,11 +374,10 @@
 
     let wakeLock = null;
     document.body.addEventListener('click', async () => {
-      try {
-        if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-      } catch (err) {}
+      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
     });
 
+    /* ================= OMR 채점기 ================= */
     let extractedAnswers = [];
     document.getElementById('answer-image').addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -414,6 +422,7 @@
         <span style="font-size:1rem; color:#888;">틀린 문항: ${wrongList.length > 0 ? wrongList.join(', ') : '없음!'}</span>`;
     });
 
+    /* ================= 스와이프 인디케이터 ================= */
     const swiper = document.getElementById('swiper');
     const dots = document.querySelectorAll('.dot');
     swiper.addEventListener('scroll', () => {
