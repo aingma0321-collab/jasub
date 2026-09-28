@@ -77,38 +77,29 @@
     #clock-display { font-size: 4rem; font-weight: bold; letter-spacing: 2px; color: #fff; margin-bottom: 10px; }
     #black-screen { background: #000000; cursor: pointer; }
     
-    .omr-container { width: 100%; max-width: 400px; max-height: 50vh; overflow-y: auto; text-align: left; background: #0a0a0a; border: 1px solid #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
+    /* OMR 영역 (아래쪽 스크롤 여백 추가) */
+    .omr-container { width: 100%; max-width: 450px; max-height: 45vh; overflow-y: auto; text-align: left; background: #0a0a0a; border: 1px solid #222; padding: 15px; border-radius: 10px; margin-top: 15px; }
     .omr-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
     .omr-row label { display: inline-block; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #444; text-align: center; line-height: 30px; margin-left: 5px; cursor: pointer; font-size: 0.9rem; background: #000; color: #ccc;}
     .omr-row input[type="radio"] { display: none; }
-    .omr-row input[type="radio"]:checked + label { background: #fff; color: #000; font-weight: bold; }
+    .omr-row input[type="radio"]:checked + label { background: #fff; color: #000; font-weight: bold; border-color:#fff; }
     
     .indicator { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 100; }
     .dot { width: 8px; height: 8px; background: #333; border-radius: 50%; }
     .dot.active { background: white; }
-    
-    /* 앱 설치 유도 팝업 */
-    #install-banner { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #222; border: 1px solid #555; padding: 15px 20px; border-radius: 10px; z-index: 999; box-shadow: 0 5px 15px rgba(0,0,0,0.8); text-align: center; width: 90%; max-width: 350px; }
   </style>
 </head>
 <body>
 
-  <div id="install-banner">
-    <p style="margin-bottom: 10px; font-weight: bold;">앱으로 설치해서 사용하시겠습니까?</p>
-    <button id="install-btn" class="btn" style="background:#4CAF50; border:none; padding:8px 16px;">네, 설치할게요</button>
-    <button id="close-banner" class="btn" style="background:#555; border:none; padding:8px 16px;">닫기</button>
-  </div>
-
   <div class="indicator" id="indicator">
-    <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
   </div>
 
   <div class="swiper-container" id="swiper">
     
-    <!-- [페이지 1] 왼쪽 끝: 타이머 & 스톱워치 -->
+    <!-- [페이지 1] 타이머 & 스톱워치 -->
     <div class="page">
       <h2>타이머 & 스톱워치</h2>
-      
       <div class="utility-box">
         <div class="utility-title">타이머</div>
         <div style="display:flex; gap:5px; margin-bottom:8px;">
@@ -130,13 +121,14 @@
       </div>
     </div>
 
-    <!-- [페이지 2] 중앙 메인: 자습자족 -->
+    <!-- [페이지 2] 메인: 자습자족 -->
     <div class="page">
       <h1>자습자족</h1>
       <p style="color:#666; margin-bottom: 20px;">양옆으로 스와이프하여 기능을 전환하세요</p>
+      <button id="install-btn" class="btn" style="display:none; background:#222; border-color:#555; font-weight:bold;">📲 홈 화면에 앱으로 설치하기</button>
     </div>
 
-    <!-- [페이지 3] 오른쪽 1: 시간표 -->
+    <!-- [페이지 3] 시간표 -->
     <div class="page">
       <h2 style="margin-bottom: 5px;">시간표</h2>
       <table class="timetable">
@@ -157,7 +149,7 @@
       </table>
     </div>
 
-    <!-- [페이지 4] 오른쪽 2: 클리어 메모지 -->
+    <!-- [페이지 4] 클리어 메모지 -->
     <div class="page">
       <div class="memo-board-container">
         <div class="memo-header">📌 클리어 메모지</div>
@@ -170,60 +162,51 @@
       </div>
     </div>
 
-    <!-- [페이지 5] 오른쪽 3: 시계 -->
+    <!-- [페이지 5] 시계 -->
     <div class="page">
       <div id="clock-display">00:00:00</div>
     </div>
 
-    <!-- [페이지 6] 오른쪽 4: 검은 화면 -->
+    <!-- [페이지 6] 검은 화면 -->
     <div class="page" id="black-screen"></div>
 
-    <!-- [페이지 7] 오른쪽 5: OMR 채점기 -->
-    <div class="page">
+    <!-- [페이지 7] OMR 채점기 -->
+    <div class="page" style="padding-bottom: 80px;"> <!-- 스크롤 짤림 방지 -->
       <h2>정답 채점기</h2>
-      <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">정답지가 있는 사진을 올리세요</p>
-      <input type="file" id="answer-image" accept="image/*" class="btn" style="font-size: 0.9rem; width:90%; max-width:400px;">
-      <div id="ocr-status" style="color:#aaa; font-size:0.9rem; margin-top:5px;"></div>
+      <p style="font-size:0.85rem; color:#888; margin-bottom:15px; text-align:center;">
+        오류 없는 정확한 채점을 위해 정답 숫자 직접 입력을 추천합니다.
+      </p>
       
+      <div style="width:100%; max-width:450px; display:flex; flex-direction:column; gap:12px;">
+        <div style="background:#111; padding:15px; border-radius:8px; border:1px solid #333;">
+          <p style="font-size:0.9rem; color:#ccc; margin-bottom:8px;">✅ 방식 1: 정답만 직접 입력 (밀림 현상 0%)</p>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="manual-answer-input" inputmode="numeric" class="input-box" placeholder="정답 연속 입력 (예: 31452)" style="padding:10px; font-size:1.1rem; letter-spacing:2px;">
+            <button class="btn" onclick="setManualAnswers()" style="margin:0; padding:10px 15px; background:#333; flex-shrink:0;">숨기기</button>
+          </div>
+        </div>
+
+        <div style="background:#111; padding:15px; border-radius:8px; border:1px solid #333;">
+          <p style="font-size:0.9rem; color:#ccc; margin-bottom:8px;">📸 방식 2: 정답지 사진 올리기</p>
+          <input type="file" id="answer-image" accept="image/*" style="width:100%; color:#fff; font-size:0.9rem;">
+        </div>
+      </div>
+
+      <div id="ocr-status" style="color:#ffcc00; font-size:0.95rem; margin-top:15px; font-weight:bold;"></div>
+      
+      <!-- OMR 시트 영역 -->
       <div class="omr-container" id="omr-board"></div>
-      <button class="btn" id="grade-btn" style="display:none; width: 100%; max-width: 400px; margin-top: 10px;">채점하기</button>
-      <div id="grade-result" style="font-size: 1.5rem; margin-top: 15px; font-weight:bold; color:#fff;"></div>
+      
+      <!-- 채점 버튼 -->
+      <button class="btn" id="grade-btn" style="display:none; width: 100%; max-width: 450px; margin-top: 15px; background:#2e7d32; border-color:#1b5e20;">📝 채점하기</button>
+      
+      <!-- 결과판 -->
+      <div id="grade-result" style="width: 100%; max-width: 450px; font-size: 1.5rem; margin-top: 15px; font-weight:bold; color:#fff; text-align:center; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; display: none;"></div>
     </div>
+
   </div>
 
   <script>
-    /* ================= PWA 서비스 워커 등록 (가장 중요한 부분 복구) ================= */
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker 등록 성공!', reg))
-          .catch(err => console.log('Service Worker 등록 실패', err));
-      });
-    }
-
-    /* ================= 앱 설치 유도 로직 ================= */
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      // 설치 가능할 때 상단에 배너 띄우기
-      document.getElementById('install-banner').style.display = 'block';
-    });
-
-    document.getElementById('install-btn').addEventListener('click', async () => {
-      document.getElementById('install-banner').style.display = 'none';
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      }
-    });
-
-    document.getElementById('close-banner').addEventListener('click', () => {
-      document.getElementById('install-banner').style.display = 'none';
-    });
-
-    /* ================= Firebase 설정 ================= */
     const firebaseConfig = {
       apiKey: "AIzaSyBdX2nqZYkH_V33s_bV8TRpa-rAIiBWbcQ",
       authDomain: "test-eb398.firebaseapp.com",
@@ -242,15 +225,28 @@
       swiper.scrollLeft = window.innerWidth * 1; 
     });
 
-    /* ================= 타이머 & 스톱워치 ================= */
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('install-btn');
+      if(installBtn) installBtn.style.display = 'block';
+    });
+
+    document.getElementById('install-btn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+
+    /* 타이머 및 스톱워치 로직 */
     let timerInterval = null;
     function startTimer() {
       const minInput = document.getElementById('timer-min').value;
       let totalSeconds = parseInt(minInput) * 60;
-      if(isNaN(totalSeconds) || totalSeconds <= 0) {
-        alert('올바른 분을 입력해주세요.');
-        return;
-      }
+      if(isNaN(totalSeconds) || totalSeconds <= 0) return alert('올바른 분을 입력해주세요.');
       
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
@@ -265,43 +261,26 @@
         document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
       }, 1000);
     }
-    function stopTimer() {
-      clearInterval(timerInterval);
-      document.getElementById('timer-display').innerText = "00:00";
-    }
+    function stopTimer() { clearInterval(timerInterval); document.getElementById('timer-display').innerText = "00:00"; }
 
-    let swInterval = null;
-    let swSeconds = 0;
+    let swInterval = null, swSeconds = 0;
     function startStopwatch() {
       if(swInterval) return;
       swInterval = setInterval(() => {
         swSeconds++;
-        let h = Math.floor(swSeconds / 3600);
-        let m = Math.floor((swSeconds % 3600) / 60);
-        let s = swSeconds % 60;
-        document.getElementById('stopwatch-display').innerText = 
-          `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        let h = Math.floor(swSeconds / 3600), m = Math.floor((swSeconds % 3600) / 60), s = swSeconds % 60;
+        document.getElementById('stopwatch-display').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
       }, 1000);
     }
-    function pauseStopwatch() {
-      clearInterval(swInterval);
-      swInterval = null;
-    }
-    function resetStopwatch() {
-      clearInterval(swInterval);
-      swInterval = null;
-      swSeconds = 0;
-      document.getElementById('stopwatch-display').innerText = "00:00:00";
-    }
+    function pauseStopwatch() { clearInterval(swInterval); swInterval = null; }
+    function resetStopwatch() { clearInterval(swInterval); swInterval = null; swSeconds = 0; document.getElementById('stopwatch-display').innerText = "00:00:00"; }
 
-    /* ================= 클리어 메모지 ================= */
+    /* 클리어 메모지 로직 */
     function addNewMemo() {
       const input = document.getElementById('memo-input');
       const text = input.value.trim();
       if(!text) return;
-
-      const newMemoRef = db.ref('memos').push();
-      newMemoRef.set({ text: text, progress: 0, done: false, showSlider: false });
+      db.ref('memos').push().set({ text: text, progress: 0, done: false, showSlider: false });
       input.value = '';
     }
 
@@ -309,46 +288,25 @@
       const data = snapshot.val();
       const listArea = document.getElementById('memo-list-area');
       listArea.innerHTML = '';
+      if (!data) { document.getElementById('delete-all-btn').style.display = 'none'; return; }
 
-      if (!data) {
-        document.getElementById('delete-all-btn').style.display = 'none';
-        return;
-      }
-
-      let allDone = true;
-      let count = 0;
-
+      let allDone = true, count = 0;
       Object.keys(data).forEach(id => {
-        const m = data[id];
-        count++;
-        if(!m.done) allDone = false;
-
-        const card = document.createElement('div');
-        card.className = 'memo-card';
-        const line = document.createElement('div');
-        line.className = 'memo-line';
-
-        const checkBtn = document.createElement('button');
-        checkBtn.className = 'memo-check-toggle';
-        checkBtn.innerHTML = m.done ? '✅' : '⬜';
+        const m = data[id]; count++; if(!m.done) allDone = false;
+        const card = document.createElement('div'); card.className = 'memo-card';
+        const line = document.createElement('div'); line.className = 'memo-line';
+        
+        const checkBtn = document.createElement('button'); checkBtn.className = 'memo-check-toggle'; checkBtn.innerHTML = m.done ? '✅' : '⬜';
         checkBtn.onclick = () => { if(!m.done) db.ref(`memos/${id}`).update({ showSlider: !m.showSlider }); };
-
-        const textContent = document.createElement('span');
-        textContent.className = 'memo-text-content';
-        textContent.innerText = m.text;
+        
+        const textContent = document.createElement('span'); textContent.className = 'memo-text-content'; textContent.innerText = m.text;
         if(m.done) textContent.classList.add('strikethrough');
-
-        line.appendChild(checkBtn);
-        line.appendChild(textContent);
-        card.appendChild(line);
-
+        
+        line.appendChild(checkBtn); line.appendChild(textContent); card.appendChild(line);
         if(m.showSlider && !m.done) {
-          const sliderBox = document.createElement('div');
-          sliderBox.className = 'memo-slider-box';
-          sliderBox.innerHTML = `
-            <input type="range" min="0" max="100" value="${m.progress}" onchange="updateFirebaseProgress('${id}', this.value)">
-            <span style="font-weight:bold; font-size:0.9rem; color:#aaa; min-width:35px; text-align:right;">${m.progress}%</span>
-          `;
+          const sliderBox = document.createElement('div'); sliderBox.className = 'memo-slider-box';
+          sliderBox.innerHTML = `<input type="range" min="0" max="100" value="${m.progress}" onchange="updateFirebaseProgress('${id}', this.value)">
+            <span style="font-weight:bold; font-size:0.9rem; color:#aaa; min-width:35px; text-align:right;">${m.progress}%</span>`;
           card.appendChild(sliderBox);
         }
         listArea.appendChild(card);
@@ -362,67 +320,120 @@
       if(progress === 100) { updateData.done = true; updateData.showSlider = false; }
       db.ref(`memos/${id}`).update(updateData);
     }
-
     function deleteAllFirebaseMemos() { db.ref('memos').remove(); }
 
-    /* ================= 시계 & 절전 방지 ================= */
+    /* 시계 및 WakeLock */
     setInterval(() => {
       const now = new Date();
-      document.getElementById('clock-display').innerText = 
-        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      document.getElementById('clock-display').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
     }, 1000);
 
     let wakeLock = null;
-    document.body.addEventListener('click', async () => {
-      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
-    });
+    document.body.addEventListener('click', async () => { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} });
 
-    /* ================= OMR 채점기 ================= */
+    /* ================= 시각적으로 확 바뀐 OMR 채점 로직 ================= */
     let extractedAnswers = [];
+
+    function setManualAnswers() {
+      const val = document.getElementById('manual-answer-input').value;
+      const numbers = val.replace(/[^1-5]/g, '').split('').map(Number);
+      
+      if(numbers.length === 0) {
+        document.getElementById('ocr-status').innerText = "❌ 1~5 사이의 정답 숫자를 연속으로 적어주세요.";
+        return;
+      }
+      
+      extractedAnswers = numbers;
+      document.getElementById('manual-answer-input').value = ""; 
+      document.getElementById('ocr-status').style.color = "#4CAF50";
+      document.getElementById('ocr-status').innerHTML = `✅ 정답 <strong>${numbers.length}개</strong> 세팅 완료! (내용 숨겨짐)`;
+      generateOMR(numbers.length);
+    }
+
     document.getElementById('answer-image').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
       const status = document.getElementById('ocr-status');
-      status.innerText = "정답 분석 중...";
+      status.style.color = "#aaa";
+      status.innerText = "사진 분석 중... (최대 10초)";
       
       Tesseract.recognize(file, 'eng', { logger: m => {} })
         .then(({ data: { text } }) => {
-          const numbers = text.replace(/[^1-5]/g, '').split('').map(Number).filter(n => n >= 1 && n <= 5);
+          const numbers = text.replace(/[^1-5]/g, '').split('').map(Number);
           if (numbers.length === 0) {
-            status.innerText = "정답을 인식하지 못했습니다.";
+            status.style.color = "#FF5252";
+            status.innerText = "❌ 정답 숫자를 찾지 못했습니다. 직접 입력 방식을 사용해주세요.";
             return;
           }
-          extractedAnswers = numbers.slice(0, 20); 
-          status.innerText = "정답 인식 완료!";
+          extractedAnswers = numbers;
+          status.style.color = "#4CAF50";
+          status.innerHTML = `✅ 사진 인식 완료! <br>(총 <strong>${extractedAnswers.length}개</strong>의 숫자가 인식됨)`;
           generateOMR(extractedAnswers.length);
+        })
+        .catch(err => {
+          status.style.color = "#FF5252";
+          status.innerText = "❌ 인식 오류입니다. 직접 입력을 사용해주세요.";
         });
     });
 
+    // OMR 시트를 생성할 때 O/X 마크가 들어갈 공간을 미리 만들어둠
     function generateOMR(count) {
       const board = document.getElementById('omr-board');
       board.innerHTML = '';
       for(let i = 0; i < count; i++) {
         let row = document.createElement('div');
         row.className = 'omr-row';
-        row.innerHTML = `<span style="width: 30px; font-weight:bold; color:#aaa;">${i+1}.</span>
-          <div>${[1,2,3,4,5].map(j => `<input type="radio" name="q${i}" id="q${i}_o${j}" value="${j}"><label for="q${i}_o${j}">${j}</label>`).join('')}</div>`;
+        row.id = `row-q${i}`; // 각각의 행(문제)에 ID 부여
+        row.innerHTML = `
+          <div style="display:flex; align-items:center;">
+            <span style="width: 30px; font-weight:bold; color:#aaa;">${i+1}.</span>
+            <div>${[1,2,3,4,5].map(j => `<input type="radio" name="q${i}" id="q${i}_o${j}" value="${j}"><label for="q${i}_o${j}">${j}</label>`).join('')}</div>
+          </div>
+          <span class="result-mark" style="font-weight:bold; font-size:0.9rem; min-width:55px; text-align:right;"></span>
+        `;
         board.appendChild(row);
       }
       document.getElementById('grade-btn').style.display = 'block';
+      document.getElementById('grade-result').style.display = 'none';
     }
 
+    // 채점하기 버튼을 눌렀을 때
     document.getElementById('grade-btn').addEventListener('click', () => {
       let score = 0, total = extractedAnswers.length, wrongList = [];
+      
       for(let i = 0; i < total; i++) {
         const selected = document.querySelector(`input[name="q${i}"]:checked`);
-        if (selected && parseInt(selected.value) === extractedAnswers[i]) score++;
-        else wrongList.push(i + 1);
+        const rowMark = document.querySelector(`#row-q${i} .result-mark`);
+        
+        // 사용자가 선택한 값이 있고, 그 값이 실제 정답과 같다면
+        if (selected && parseInt(selected.value) === extractedAnswers[i]) {
+          score++;
+          if(rowMark) { 
+            rowMark.innerText = '⭕ 정답'; 
+            rowMark.style.color = '#4CAF50'; 
+          }
+        } else {
+          wrongList.push(i + 1);
+          if(rowMark) { 
+            rowMark.innerText = `❌ 답:${extractedAnswers[i]}`; 
+            rowMark.style.color = '#FF5252'; 
+          }
+        }
       }
-      document.getElementById('grade-result').innerHTML = `점수: <span style="color:#fff">${Math.round((score/total)*100)}점</span> (${score}/${total})<br>
-        <span style="font-size:1rem; color:#888;">틀린 문항: ${wrongList.length > 0 ? wrongList.join(', ') : '없음!'}</span>`;
+      
+      // 결과판 디자인 업데이트
+      const resultDiv = document.getElementById('grade-result');
+      resultDiv.style.display = 'block';
+      
+      const point = Math.round((score / total) * 100);
+      resultDiv.innerHTML = `
+        내 점수: <span style="color:#4CAF50; font-size:2rem;">${point}점</span> 
+        <span style="font-size:1rem; color:#aaa; font-weight:normal;">(${score} / ${total})</span><br>
+        <span style="font-size:1.1rem; color:#FF5252; display:block; margin-top:12px; word-break:keep-all;">
+          틀린 번호: ${wrongList.length > 0 ? wrongList.join(', ') : '💯 없음! 만점입니다!'}
+        </span>`;
     });
 
-    /* ================= 스와이프 인디케이터 ================= */
     const swiper = document.getElementById('swiper');
     const dots = document.querySelectorAll('.dot');
     swiper.addEventListener('scroll', () => {
